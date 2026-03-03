@@ -1,4 +1,4 @@
-# RAG for Beginners (Ingestion)
+# GPT scans each PDF page, extracts product names and specs into a catalogue, falling back to the previous page's title when no title is found.
 
 This repo currently includes a simple ingestion pipeline that:
 
