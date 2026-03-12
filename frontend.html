@@ -227,6 +227,65 @@
 
     .highlight { background: #fff3cd; border-radius: 3px; padding: 0 2px; }
 
+    /* ── Editable cells ── */
+    td[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+    td[contenteditable="true"]:focus {
+      background: #eef3ff;
+      box-shadow: inset 0 0 0 2px #4f8ef7;
+      border-radius: 4px;
+    }
+    td[contenteditable="true"]:hover:not(:focus) {
+      background: #f0f4ff;
+    }
+
+    /* ── Delete button ── */
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 15px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .delete-btn:hover { color: #e55; background: #ffeaea; }
+    th.delete-col, td.delete-col { width: 36px; padding: 6px 8px; text-align: center; }
+
+    /* ── Add buttons ── */
+    .add-row-btn {
+      padding: 7px 14px;
+      background: #4f8ef7;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .add-row-btn:hover { background: #3a7ae0; }
+
+    #add-product-btn {
+      margin: 0 16px 12px;
+      padding: 8px 12px;
+      background: #252540;
+      color: #8888aa;
+      border: 1px dashed #3d3d60;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      width: calc(100% - 32px);
+      text-align: center;
+      transition: all 0.15s;
+    }
+    #add-product-btn:hover { background: #2d2d50; color: #fff; border-color: #4f8ef7; }
+
     /* ── No results ── */
     .no-results {
       text-align: center;
@@ -252,6 +311,7 @@
   </div>
   <input type="text" id="search-box" placeholder="Search products..." oninput="filterSidebar()" />
   <div id="product-list"></div>
+  <button id="add-product-btn" onclick="addProduct()">+ New Product</button>
 </div>
 
 <!-- Main -->
@@ -259,10 +319,11 @@
   <div id="topbar">
     <div id="topbar-left">
       <h2 id="product-title">Select a product</h2>
-      <p id="product-desc"></p>
     </div>
     <div id="filter-bar">
       <input type="text" id="col-search" placeholder="Filter items..." oninput="renderTable()" />
+      <button class="add-row-btn" onclick="addRow()" id="add-row-btn" style="display:none">+ Add Row</button>
+      <button class="add-row-btn" onclick="addColumn()" id="add-col-btn" style="display:none;background:#6c63ff;">+ Add Column</button>
       <span id="stats"></span>
     </div>
   </div>
@@ -324,8 +385,8 @@
       )
     );
     document.getElementById('product-title').textContent = name;
-    const desc = catalogue[name]?.description || '';
-    document.getElementById('product-desc').textContent = desc;
+    document.getElementById('add-row-btn').style.display = 'inline-block';
+    document.getElementById('add-col-btn').style.display = 'inline-block';
     document.getElementById('col-search').value = '';
     renderTable();
   }
@@ -352,34 +413,85 @@
     // Collect all column keys
     const keys = [...new Set(filtered.flatMap(item => Object.keys(item)))];
 
-    const thead = `<thead><tr>${keys.map(k => `<th>${escHtml(k)}</th>`).join('')}</tr></thead>`;
+    const thead = `<thead><tr>${keys.map(k => `<th>${escHtml(k)}</th>`).join('')}<th class="delete-col"></th></tr></thead>`;
 
-    const tbody = filtered.map(item => {
+    const tbody = filtered.map((item, rowIdx) => {
+      // Find the real index in the full items array for deletion
+      const realIdx = items.indexOf(item);
       const cells = keys.map(k => {
-        let val = item[k] ?? '';
-        const valStr = String(val);
-
-        // Highlight search term
-        let display = escHtml(valStr);
-        if (q && valStr.toLowerCase().includes(q)) {
-          const re = new RegExp(`(${escRegex(q)})`, 'gi');
-          display = display.replace(re, '<span class="highlight">$1</span>');
-        }
-
-        // Style item_number and material columns
-        if (k.toLowerCase().includes('item') || k.toLowerCase().includes('number')) {
-          return `<td><span class="item-number">${display}</span></td>`;
-        }
-        if (k.toLowerCase() === 'material') {
-          const cls = 'material-' + valStr.replace(/\s+/g, '\\ ');
-          return `<td><span class="material-badge ${cls}">${display}</span></td>`;
-        }
-        return `<td>${display}</td>`;
+        const valStr = String(item[k] ?? '');
+        return `<td contenteditable="true"
+                    data-key="${escHtml(k)}"
+                    data-idx="${realIdx}"
+                    onblur="saveCell(this)"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+                  >${escHtml(valStr)}</td>`;
       }).join('');
-      return `<tr>${cells}</tr>`;
+      return `<tr>${cells}<td class="delete-col"><button class="delete-btn" title="Delete row" onclick="deleteRow(${realIdx})">✕</button></td></tr>`;
     }).join('');
 
     container.innerHTML = `<table>${thead}<tbody>${tbody}</tbody></table>`;
+  }
+
+  function saveCell(td) {
+    const idx = parseInt(td.dataset.idx);
+    const key = td.dataset.key;
+    const newVal = td.innerText.trim();
+    if (catalogue[activeProduct]?.items?.[idx] !== undefined) {
+      catalogue[activeProduct].items[idx][key] = newVal;
+    }
+  }
+
+  function deleteRow(idx) {
+    if (!activeProduct) return;
+    catalogue[activeProduct].items.splice(idx, 1);
+    refreshSidebar();
+    renderTable();
+  }
+
+  function addRow() {
+    if (!activeProduct) return;
+    const items = catalogue[activeProduct].items;
+    // Build an empty object with the same keys as existing rows
+    const keys = items.length > 0 ? Object.keys(items[0]) : ['item_number'];
+    const newRow = {};
+    keys.forEach(k => newRow[k] = '');
+    items.push(newRow);
+    refreshSidebar();
+    renderTable();
+    // Scroll to bottom and focus first cell of new row
+    const container = document.getElementById('table-container');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function addColumn() {
+    if (!activeProduct) return;
+    const colName = prompt('Enter new column name:');
+    if (!colName || !colName.trim()) return;
+    const trimmed = colName.trim();
+    // Add the key with empty value to every row
+    const items = catalogue[activeProduct].items;
+    items.forEach(item => { if (!(trimmed in item)) item[trimmed] = ''; });
+    // If no rows exist yet, nothing to add to but column will appear on next Add Row
+    renderTable();
+  }
+
+  function addProduct() {
+    const name = prompt('Enter new product name:');
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    if (catalogue[trimmed]) { alert('Product already exists.'); return; }
+    catalogue[trimmed] = { description: '', items: [] };
+    refreshSidebar();
+    selectProduct(trimmed);
+  }
+
+  function refreshSidebar() {
+    renderSidebar(
+      Object.keys(catalogue).filter(n =>
+        n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
+      )
+    );
   }
 
   function escHtml(s) {
