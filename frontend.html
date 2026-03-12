@@ -195,13 +195,19 @@
       letter-spacing: 0.4px;
       text-transform: uppercase;
       white-space: nowrap;
+      border-right: 1px solid #d0d4e0;
     }
+
+    th:last-child { border-right: none; }
 
     td {
       padding: 11px 16px;
-      border-bottom: 1px solid #f0f2f5;
+      border-bottom: 1px solid #d8dce8;
+      border-right: 1px solid #d8dce8;
       color: #333;
     }
+
+    td:last-child { border-right: none; }
 
     tbody tr:last-child td { border-bottom: none; }
 
@@ -255,6 +261,23 @@
     }
     .delete-btn:hover { color: #e55; background: #ffeaea; }
     th.delete-col, td.delete-col { width: 36px; padding: 6px 8px; text-align: center; }
+
+    th { position: relative; }
+    .th-label { margin-right: 4px; }
+    .delete-col-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: transparent;
+      font-size: 11px;
+      padding: 1px 3px;
+      border-radius: 3px;
+      line-height: 1;
+      vertical-align: middle;
+      transition: color 0.15s, background 0.15s;
+    }
+    th:hover .delete-col-btn { color: #888; }
+    .delete-col-btn:hover { color: #e55 !important; background: #ffeaea; }
 
     /* ── Add buttons ── */
     .add-row-btn {
@@ -413,7 +436,7 @@
     // Collect all column keys
     const keys = [...new Set(filtered.flatMap(item => Object.keys(item)))];
 
-    const thead = `<thead><tr>${keys.map(k => `<th>${escHtml(k)}</th>`).join('')}<th class="delete-col"></th></tr></thead>`;
+    const thead = `<thead><tr>${keys.map(k => `<th><span class="th-label">${escHtml(k)}</span><button class="delete-col-btn" title="Delete column" onclick="deleteColumn('${escHtml(k)}')">✕</button></th>`).join('')}<th class="delete-col"></th></tr></thead>`;
 
     const tbody = filtered.map((item, rowIdx) => {
       // Find the real index in the full items array for deletion
@@ -462,6 +485,13 @@
     // Scroll to bottom and focus first cell of new row
     const container = document.getElementById('table-container');
     container.scrollTop = container.scrollHeight;
+  }
+
+  function deleteColumn(key) {
+    if (!activeProduct) return;
+    if (!confirm(`Delete column "${key}" from all rows?`)) return;
+    catalogue[activeProduct].items.forEach(item => delete item[key]);
+    renderTable();
   }
 
   function addColumn() {
