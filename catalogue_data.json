@@ -1,70 +1,447 @@
 {
-  "Sikafloor®-263 SL": {
-    "description": "Self-smoothing pigmented epoxy resin for flooring application",
+  "BLOCK WORK ACCESSORIES": {
+    "description": "SFSP manufactures Block Work Accessories in accordance with: - BS EN 845-1:2013+A1:2016 Relevant Standards - BS 1243:1978 Finishing - Galvanized Steel according to BS EN 10346:2015 - Hot Dipped Galvanized according to BS EN ISO 1461:2009 - Stainless Steel according to BS EN 10088-2:2014 Materials - Hot rolled steel S235JR as per EN 10025 / ASTM A-1011 CS Type B (formerly ASTM A569 or ASTM A570) - Cold rolled steel DC01 as per EN 10130:2006 / ASTM A1008 CS Type B (formerly ASTM A-36) and then: Manufacture Specifications: - Steel Lintels - manufactured to BS 5977: Part 2 :1983 / BS EN 845-2:2013+A1:2016. - Wall Ties - manufactured to BS EN 845-1:2003 ( Formerly BS 1234 ). - Block Reinforcement Ladder and Truss - manufactured as per ASTM A82 / ASTM A951 / BS EN 845-2:2013+A1:2016.",
     "items": []
   },
-  "APPLICATION INFORMATION": {
-    "description": "Consumption details for self-smoothing wearing course.",
+  "CRAMPS AND TIES": {
+    "description": "Head End Options",
     "items": [
       {
-        "Product": "Sikafloor®-263 SL",
-        "Application thickness": "1.0 - 2.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 0.4",
-        "Consumption per 1mm thickness": "~1.6 kg/m²/mm"
+        "item_number": "REF: -/-/36",
+        "type": "RCH / SCH Channel"
       },
       {
-        "Product": "+Sikadur®-504",
-        "Application thickness": "1.0 - 2.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 0.4",
-        "Consumption per 1mm thickness": "~1.6 kg/m²/mm"
+        "item_number": "REF: -/-/10",
+        "type": "CCH Channel"
       },
       {
-        "Product": "Sikafloor®-263 SL",
-        "Application thickness": "1.5 - 2.5 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 0.8",
-        "Consumption per 1mm thickness": "~1.8 kg/m²/mm"
+        "item_number": "REF: -/-/30",
+        "type": "DCH Channel"
       },
       {
-        "Product": "+Sikadur®-504",
-        "Application thickness": "1.5 - 2.5 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 0.8",
-        "Consumption per 1mm thickness": "~1.8 kg/m²/mm"
+        "item_number": "REF: -/-/50",
+        "type": "Bolt Screw Fixing"
       },
       {
-        "Product": "Sikafloor®-263 SL",
-        "Application thickness": "2.0 - 3.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1",
-        "Consumption per 1mm thickness": "~1.85 kg/m²/mm"
+        "item_number": null,
+        "type": "L-Angle Sloted"
       },
       {
-        "Product": "+Sikadur®-504",
-        "Application thickness": "2.0 - 3.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1",
-        "Consumption per 1mm thickness": "~1.85 kg/m²/mm"
+        "item_number": null,
+        "type": "L-Angle Hole"
       },
       {
-        "Product": "Sikafloor®-263 SL",
-        "Application thickness": "2.5 - 4.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1.25",
-        "Consumption per 1mm thickness": "~1.9 kg/m²/mm"
+        "item_number": null,
+        "type": "Plain"
       },
       {
-        "Product": "+Sikadur®-504",
-        "Application thickness": "2.5 - 4.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1.25",
-        "Consumption per 1mm thickness": "~1.9 kg/m²/mm"
+        "item_number": null,
+        "type": "Plain"
       },
       {
-        "Product": "Sikafloor®-263 SL",
-        "Application thickness": "4.0 - 6.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1.8",
-        "Consumption per 1mm thickness": "~2.0 kg/m²/mm"
+        "item_number": "3 Holes",
+        "REF": null
       },
       {
-        "Product": "+Sikadur®-513",
-        "Application thickness": "4.0 - 6.0 mm",
-        "Mixing ratio Epoxy resin : Quartz sand": "1 : 1.8",
-        "Consumption per 1mm thickness": "~2.0 kg/m²/mm"
+        "item_number": "Turned Down",
+        "REF": null
+      },
+      {
+        "item_number": "Split Tie",
+        "REF": null
+      },
+      {
+        "item_number": "Plain",
+        "REF": null
+      },
+      {
+        "item_number": "Returned Z",
+        "REF": null
+      },
+      {
+        "item_number": "Plain with pin",
+        "REF": null
+      },
+      {
+        "item_number": "Plain 1 Hole",
+        "REF": null
+      },
+      {
+        "item_number": "Plain 3 Holes",
+        "REF": null
+      },
+      {
+        "item_number": "Corrugated",
+        "REF": null
+      },
+      {
+        "item_number": "Fishtailed REF: -/- /99",
+        "REF": "-/- /99"
+      },
+      {
+        "item_number": "Turned Down REF: -/- /88",
+        "REF": "-/- /88"
+      },
+      {
+        "item_number": "Dowel REF: D/-/-",
+        "REF": "D/-/-"
+      },
+      {
+        "item_number": "Split Tang REF: S/-/-",
+        "REF": "S/-/-"
+      },
+      {
+        "item_number": "Turned Down REF: T/-/-",
+        "REF": "T/-/-"
+      },
+      {
+        "item_number": "Fishtailed REF: B/-/-",
+        "REF": "B/-/-"
+      },
+      {
+        "item_number": "Plain REF: P/-/-",
+        "REF": "P/-/-"
+      }
+    ]
+  },
+  "Shank Options": {
+    "description": "Shanks may be plain or may include a drip to stop the passage of moisture across",
+    "items": [
+      {
+        "REF": "-/P/-",
+        "type": "Plain"
+      },
+      {
+        "REF": "-/D/-",
+        "type": "Dimpled"
+      },
+      {
+        "REF": "-/F/-",
+        "type": "Full Twist"
+      },
+      {
+        "REF": "-/H/-",
+        "type": "Half Twist"
+      },
+      {
+        "REF": "DS/-/-",
+        "type": "Debonding Block Ties"
+      },
+      {
+        "REF": "S/-/-",
+        "type": "Rubber Sleeve"
+      },
+      {
+        "type": "Pin"
+      }
+    ]
+  },
+  "Frame Cramps and Channel Ties": {
+    "description": "Frame cramps with a single 7mm diameter hole or an 8mm x 30mm vertical slot can be fixed to concrete, steelwork or masonry. M6 Single Expansion bolts are recommended for fixing to concrete, setscrews or self-drilling screws for steelwork, and suitable plugs and screws for fixing to masonry. Poor substrates will limit the capacity of frame cramps and site treating is advisable in some cases. The performance will also be determined by the position of the fixing. Channel ties fixed to steelwork or concrete at the lowest point of slot will have a safe working load of approximately 1kN. The capacity will reduce as the fixing is moved further away from the bend and greater movement shall be expected than with other wall ties.",
+    "items": [
+      {
+        "Item Number": "SOBTL_F_00051209",
+        "Dimensions B x A x C x T [mm]": "30x50x50x1.50",
+        "Material": "MS [Mild Steel]"
+      },
+      {
+        "Item Number": "SOBTL_F_00055995",
+        "Dimensions B x A x C x T [mm]": "30x50x50x2.00",
+        "Material": "MS [Mild Steel]"
+      },
+      {
+        "Item Number": "SOBTL_F_00072009",
+        "Dimensions B x A x C x T [mm]": "30x50x200x2.00",
+        "Material": "MS [Mild Steel]"
+      },
+      {
+        "Item Number": "SOBTL_F_00061881",
+        "Dimensions B x A x C x T [mm]": "25x30x50x1.50",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00061887",
+        "Dimensions B x A x C x T [mm]": "25x30x50x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00051745",
+        "Dimensions B x A x C x T [mm]": "25x30x200x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00040664",
+        "Dimensions B x A x C x T [mm]": "25x40x50x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00041620",
+        "Dimensions B x A x C x T [mm]": "30x50x50x1.50",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00060949",
+        "Dimensions B x A x C x T [mm]": "30x50x50x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00058065",
+        "Dimensions B x A x C x T [mm]": "30x50x200x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00098679",
+        "Dimensions B x A x C x T [mm]": "50x50x200x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00083037",
+        "Dimensions B x A x C x T [mm]": "25x30x200x1.80",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00067533",
+        "Dimensions B x A x C x T [mm]": "20x75x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00040658",
+        "Dimensions B x A x C x T [mm]": "25x30x50x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00075863",
+        "Dimensions B x A x C x T [mm]": "25x30x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00051751",
+        "Dimensions B x A x C x T [mm]": "25x30x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00047456",
+        "Dimensions B x A x C x T [mm]": "30x50x50x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00054173",
+        "Dimensions B x A x C x T [mm]": "30x50x50x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00040646",
+        "Dimensions B x A x C x T [mm]": "30x50x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00070591",
+        "Dimensions B x A x C x T [mm]": "30x50x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00047470",
+        "Dimensions B x A x C x T [mm]": "38x50x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00040652",
+        "Dimensions B x A x C x T [mm]": "40x50x150x3.00",
+        "Material": "Galvanized"
+      }
+    ]
+  },
+  "Three-Hole Block Tie": {
+    "description": "",
+    "items": [
+      {
+        "Item Number": "SOBTL_F_00041440",
+        "Dimensions B × A × C × T [mm]": "30x50x150x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00100265",
+        "Dimensions B × A × C × T [mm]": "20x30x150x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00100277",
+        "Dimensions B × A × C × T [mm]": "20x30x250x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00066019",
+        "Dimensions B × A × C × T [mm]": "20x30x255x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00041352",
+        "Dimensions B × A × C × T [mm]": "25x30x150x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00081473",
+        "Dimensions B × A × C × T [mm]": "25x30x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00062449",
+        "Dimensions B × A × C × T [mm]": "25x30x200x1.80",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00041382",
+        "Dimensions B × A × C × T [mm]": "25x30x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00078877",
+        "Dimensions B × A × C × T [mm]": "30x40x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00082981",
+        "Dimensions B × A × C × T [mm]": "30x40x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00041418",
+        "Dimensions B × A × C × T [mm]": "30x40x300x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTL_F_00058771",
+        "Dimensions B × A × C × T [mm]": "25x30x200x2.00",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00062455",
+        "Dimensions B × A × C × T [mm]": "30x50x150x1.50",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00076763",
+        "Dimensions B × A × C × T [mm]": "30x50x200x1.50",
+        "Material": "SS A4"
+      },
+      {
+        "Item Number": "SOBTL_F_00108093",
+        "Dimensions B × A × C × T [mm]": "20x30x150x3.00",
+        "Material": "SS A6"
+      },
+      {
+        "Item Number": "SOBTL_F_00108099",
+        "Dimensions B × A × C × T [mm]": "20x30x250x3.00",
+        "Material": "SS A6"
+      },
+      {
+        "Item Number": "SOBTL_F_00100233",
+        "Dimensions B × A × C × T [mm]": "20x30x255x3.00",
+        "Material": "SS A6"
+      },
+      {
+        "Item Number": "SOBTL_F_00103203",
+        "Dimensions B × A × C × T [mm]": "25x30x200x2.00",
+        "Material": "SS A6"
+      }
+    ]
+  },
+  "Block Tie Fish Tailed": {
+    "description": "",
+    "items": [
+      {
+        "Item Number": "SOBTS_F_00105757",
+        "Dimensions A x C x T (mm)": "25x250x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00042500",
+        "Dimensions A x C x T (mm)": "25x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00083025",
+        "Dimensions A x C x T (mm)": "25x200x1.80",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00059167",
+        "Dimensions A x C x T (mm)": "25x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00075635",
+        "Dimensions A x C x T (mm)": "25x200x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00075647",
+        "Dimensions A x C x T (mm)": "25x200x3.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00083053",
+        "Dimensions A x C x T (mm)": "25x250x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00087297",
+        "Dimensions A x C x T (mm)": "25x300x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00060799",
+        "Dimensions A x C x T (mm)": "30x200x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00040670",
+        "Dimensions A x C x T (mm)": "30x200x1.80",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00070597",
+        "Dimensions A x C x T (mm)": "30x200x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00073211",
+        "Dimensions A x C x T (mm)": "30x220x1.50",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00042536",
+        "Dimensions A x C x T (mm)": "30x225x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00056073",
+        "Dimensions A x C x T (mm)": "30x300x2.00",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00047506",
+        "Dimensions A x C x T (mm)": "35x100x1.20",
+        "Material": "Galvanized"
+      },
+      {
+        "Item Number": "SOBTS_F_00076545",
+        "Dimensions A x C x T (mm)": "50x200x2.00",
+        "Material": "Galvanized"
+      }
+    ]
+  },
+  "DOVE TAIL (TWA)": {
+    "description": "brief product description",
+    "items": [
+      {
+        "item_number": "Fish Tail REF: B/-/-"
+      },
+      {
+        "item_number": "DCH -/-/30"
+      },
+      {
+        "item_number": "CCH -/-/10"
       }
     ]
   }
