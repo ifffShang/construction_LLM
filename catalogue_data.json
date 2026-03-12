@@ -1,39 +1,138 @@
 {
-  "Sikafloor®-263 SL": {
-    "description": "SELF-SMOOTHING PIGMENTED EPOXY RESIN FOR FLOORING APPLICATION",
+  "ADJUSTABLE WALL TIE (AWT)": {
+    "description": "Device for connecting a masonry leaf across a cavity to another masonry leaf or to a structural frame to resist tension and compression forces while allowing limited differential movement in the plane of the wall.",
     "items": [
       {
-        "Composition": "Pigmented epoxy resin",
-        "Packaging": "Please refer to local country price list for available packaging sizes: Part A 15.8 kg containers Part B 4.2 kg containers Part A + B 20 kg ready to mix units Part A 19.75 kg containers Part B 5.25 kg containers Part A + B 25 kg ready to mix units"
+        "Tie": "B/P/30",
+        "Reference Code": "B/P/30",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "75",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": ""
       },
       {
-        "Shelf life": "24 months from date of production",
-        "Storage conditions": "The product must be stored in original, unopened and undamaged sealed packaging in dry conditions at temperatures between +5 °C and +30 °C."
+        "Tie": "B/D/30",
+        "Reference Code": "B/D/30",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "20"
       },
       {
-        "Appearance and colour": "Resin - Part A Coloured, liquid Hardener - Part B Transparent, liquid Available in various colour shades, please request Sika sales representative for colour chart. Under direct sun light there may be some discolouration and colour variation; this has no influence on the function and performance of the coating.",
-        "Density": "Part A ~1.50 kg/l (DIN EN ISO 2811-1) Part B ~1.00 kg/l Mixed resin ~1.44 kg/l Filled resin in ratio (1:1) with Sikadur®-504 ~1.83 kg/l Filled resin in ratio (1:1.25) with Sikadur®-504 ~1.89 kg/l Note: All Density values at +23 °C."
+        "Tie": "B/F/30",
+        "Reference Code": "B/F/30",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "30"
       },
       {
-        "Solid content by mass": "~100 % Note: Total solid epoxy composition acc. to the test method Deutsche Bauchemie e.V. (German Association for construction chemicals)",
-        "Solid content by volume": "~100 % Note: Total solid epoxy composition acc. to the test method Deutsche Bauchemie e.V. (German Association for construction chemicals)"
+        "Tie": "B/P/21",
+        "Reference Code": "B/P/21",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "75",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": ""
       },
       {
-        "Volatile organic compound (VOC) content": "< 100 g/l (US EPA 24)"
+        "Tie": "B/D/21",
+        "Reference Code": "B/D/21",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "20"
       },
       {
-        "Shore D Hardness": "~75 (7 d / +23 °C) (DIN 53 505)",
-        "Abrasion resistance": "<50 mg (CS 10/1000/1000) (28 d / +23 °C) (ASTM D4060)"
+        "Tie": "B/F/21",
+        "Reference Code": "B/F/21",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "30"
       },
       {
-        "Compressive strength": ">60 N/mm² (Unfilled resin, 28 d / +23 °C) (ASTM D695)",
-        "Tensile adhesion strength": "> 1.5 N/mm² (failure in concrete) (ASTM D4541)"
+        "Tie": "B/P/28",
+        "Reference Code": "B/P/28",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "75",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": ""
       },
       {
-        "Service temperature": "Exposure* Dry heat max. Permanent +50 °C Short-term max. 7 d +80 °C Short-term moist/wet heat* up to +80 °C where exposure is only occasional (steam cleaning etc.). *No simultaneous chemical and mechanical exposure and only in combination with Sikafloor® systems as a broadcast system with approximately 3 to 4 mm thickness."
+        "Tie": "B/D/28",
+        "Reference Code": "B/D/28",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "20"
       },
       {
-        "Temperature resistance": "Reaction to Fire (Critical Radiant Flux): Classification: Class I (ASTM E648)"
+        "Tie": "B/F/28",
+        "Reference Code": "B/F/28",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "30"
+      },
+      {
+        "Tie": "B/P/36",
+        "Reference Code": "B/P/36",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "75",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": ""
+      },
+      {
+        "Tie": "B/D/36",
+        "Reference Code": "B/D/36",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "100",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "20"
+      },
+      {
+        "Tie": "B/F/36",
+        "Reference Code": "B/F/36",
+        "Description": "Brick Facing Tie",
+        "Section Size (mm)": "20 x 2.0 25 x 2.0",
+        "Length 0 - 20 (mm)": "",
+        "Length 15 - 45 (mm)": "",
+        "Length 40 -70 (mm)": "150",
+        "Length 65 - 70 (mm)": "200",
+        "Position of Drip (min) mm": "30"
       }
     ]
   }

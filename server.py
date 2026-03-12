@@ -15,15 +15,14 @@ load_dotenv()
 app = Flask(__name__, static_folder=".")
 CORS(app)
 
-DOCS_DIR = "./docs"
 PROGRESS_FILE = "gpt_catalogue_progress.json"
 
 # In-memory job tracker: job_id -> {status, progress, total, log, catalogue}
 jobs = {}
 
 
-def page_to_base64(pdf_path: str, page_num: int, dpi: int = 150) -> str:
-    doc = fitz.open(pdf_path)
+def page_to_base64(pdf_bytes: bytes, page_num: int, dpi: int = 150) -> str:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     page = doc[page_num - 1]
     pix = page.get_pixmap(dpi=dpi)
     img_b64 = base64.b64encode(pix.tobytes("jpeg")).decode()
@@ -31,8 +30,8 @@ def page_to_base64(pdf_path: str, page_num: int, dpi: int = 150) -> str:
     return img_b64
 
 
-def extract_page_catalogue(pdf_path, page_num, llm, context_products=None):
-    img_b64 = page_to_base64(pdf_path, page_num)
+def extract_page_catalogue(pdf_bytes, page_num, llm, context_products=None):
+    img_b64 = page_to_base64(pdf_bytes, page_num)
     context_hint = ""
     if context_products:
         products_str = ", ".join(f'"{p}"' for p in context_products)
@@ -85,7 +84,7 @@ Rules:
         return []
 
 
-def run_extraction(job_id, pdf_path, page_from=1, page_to=None):
+def run_extraction(job_id, pdf_bytes, page_from=1, page_to=None):
     job = jobs[job_id]
     try:
         llm = ChatGroq(
@@ -93,7 +92,7 @@ def run_extraction(job_id, pdf_path, page_from=1, page_to=None):
             temperature=0,
             api_key=os.getenv("GROQ_API_KEY")
         )
-        doc = fitz.open(pdf_path)
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         total_pages = len(doc)
         doc.close()
 
@@ -112,7 +111,7 @@ def run_extraction(job_id, pdf_path, page_from=1, page_to=None):
             job["log"].append(f"Processing page {page_num}/{end}...")
 
             results = extract_page_catalogue(
-                pdf_path, page_num, llm,
+                pdf_bytes, page_num, llm,
                 context_products=prev_product_names if prev_product_names else None
             )
 
@@ -158,6 +157,10 @@ def run_extraction(job_id, pdf_path, page_from=1, page_to=None):
 
 @app.route("/")
 def index():
+    return send_from_directory(".", "index.html")
+
+@app.route("/upload.html")
+def upload_page():
     return send_from_directory(".", "upload.html")
 
 @app.route("/frontend.html")
@@ -177,9 +180,7 @@ def upload():
     if not f.filename.lower().endswith(".pdf"):
         return jsonify({"error": "Only PDF files are accepted"}), 400
 
-    os.makedirs(DOCS_DIR, exist_ok=True)
-    pdf_path = os.path.join(DOCS_DIR, f.filename)
-    f.save(pdf_path)
+    pdf_bytes = f.read()
 
     try:
         page_from = int(request.form.get("page_from", 1))
@@ -201,7 +202,7 @@ def upload():
         "catalogue": {}
     }
 
-    thread = threading.Thread(target=run_extraction, args=(job_id, pdf_path, page_from, page_to), daemon=True)
+    thread = threading.Thread(target=run_extraction, args=(job_id, pdf_bytes, page_from, page_to), daemon=True)
     thread.start()
 
     return jsonify({"job_id": job_id})
