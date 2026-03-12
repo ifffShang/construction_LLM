@@ -114,11 +114,36 @@
       gap: 16px;
     }
 
+    #topbar-left {
+      display: flex;
+      align-items: center;
+    }
+
     #topbar-left h2 {
       font-size: 20px;
       font-weight: 700;
       color: #1a1a2e;
+      outline: none;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.15s;
     }
+    #topbar-left h2[contenteditable="true"] {
+      border-bottom-color: #4f8ef7;
+    }
+
+    #rename-btn {
+      background: none;
+      border: 1px solid #dde0e8;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      color: #888;
+      padding: 4px 8px;
+      margin-left: 8px;
+      transition: all 0.15s;
+      vertical-align: middle;
+    }
+    #rename-btn:hover { color: #4f8ef7; border-color: #4f8ef7; background: #eef3ff; }
 
     #topbar-left p {
       font-size: 13px;
@@ -358,7 +383,13 @@
 <div id="main">
   <div id="topbar">
     <div id="topbar-left">
-      <h2 id="product-title">Select a product</h2>
+      <h2 id="product-title"
+          contenteditable="false"
+          spellcheck="false"
+          onblur="finishRename(this)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >Select a product</h2>
+      <button id="rename-btn" style="display:none" onclick="startRename()" title="Rename product">&#9998;</button>
     </div>
     <div id="filter-bar">
       <input type="text" id="col-search" placeholder="Filter items..." oninput="renderTable()" />
@@ -424,7 +455,10 @@
         n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
       )
     );
-    document.getElementById('product-title').textContent = name;
+    const titleEl = document.getElementById('product-title');
+    titleEl.textContent = name;
+    titleEl.contentEditable = 'false';
+    document.getElementById('rename-btn').style.display = 'inline-block';
     document.getElementById('add-row-btn').style.display = 'inline-block';
     document.getElementById('add-col-btn').style.display = 'inline-block';
     document.getElementById('col-search').value = '';
@@ -541,6 +575,37 @@
         n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
       )
     );
+  }
+
+  function startRename() {
+    if (!activeProduct) return;
+    const titleEl = document.getElementById('product-title');
+    titleEl.contentEditable = 'true';
+    titleEl.focus();
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function finishRename(el) {
+    el.contentEditable = 'false';
+    if (!activeProduct) return;
+    const newName = el.innerText.trim();
+    if (!newName || newName === activeProduct) {
+      el.textContent = activeProduct;
+      return;
+    }
+    if (catalogue[newName]) {
+      alert('A product with that name already exists.');
+      el.textContent = activeProduct;
+      return;
+    }
+    catalogue[newName] = catalogue[activeProduct];
+    delete catalogue[activeProduct];
+    activeProduct = newName;
+    refreshSidebar();
   }
 
   function initColumnResize() {
