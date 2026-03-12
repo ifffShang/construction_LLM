@@ -172,13 +172,13 @@
     #empty-state svg { opacity: 0.3; }
 
     table {
-      width: 100%;
       border-collapse: collapse;
       background: #fff;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
       font-size: 13px;
+      table-layout: fixed;
     }
 
     thead tr {
@@ -194,7 +194,8 @@
       color: #666;
       letter-spacing: 0.4px;
       text-transform: uppercase;
-      white-space: nowrap;
+      white-space: normal;
+      word-wrap: break-word;
       border-right: 1px solid #d0d4e0;
     }
 
@@ -205,6 +206,9 @@
       border-bottom: 1px solid #d8dce8;
       border-right: 1px solid #d8dce8;
       color: #333;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
     }
 
     td:last-child { border-right: none; }
@@ -262,8 +266,20 @@
     .delete-btn:hover { color: #e55; background: #ffeaea; }
     th.delete-col, td.delete-col { width: 36px; padding: 6px 8px; text-align: center; }
 
-    th { position: relative; }
+    th { position: relative; overflow: hidden; text-overflow: ellipsis; }
     .th-label { margin-right: 4px; }
+
+    .col-resize-handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 1;
+    }
+    .col-resize-handle:hover,
+    .col-resize-handle.active { background: #4f8ef7; }
     .delete-col-btn {
       background: none;
       border: none;
@@ -437,7 +453,8 @@
     // Collect all column keys
     const keys = [...new Set(filtered.flatMap(item => Object.keys(item)))];
 
-    const thead = `<thead><tr>${keys.map(k => `<th><span class="th-label">${escHtml(k)}</span><button class="delete-col-btn" title="Delete column" onclick="deleteColumn('${escHtml(k)}')">✕</button></th>`).join('')}<th class="delete-col"></th></tr></thead>`;
+    const colW = Math.max(120, Math.floor(800 / keys.length));
+    const thead = `<thead><tr>${keys.map(k => `<th style="width:${colW}px"><span class="th-label">${escHtml(k)}</span><button class="delete-col-btn" title="Delete column" onclick="deleteColumn('${escHtml(k)}')">✕</button><div class="col-resize-handle"></div></th>`).join('')}<th class="delete-col" style="width:36px"></th></tr></thead>`;
 
     const tbody = filtered.map((item, rowIdx) => {
       // Find the real index in the full items array for deletion
@@ -455,6 +472,7 @@
     }).join('');
 
     container.innerHTML = `<table>${thead}<tbody>${tbody}</tbody></table>`;
+    initColumnResize();
   }
 
   function saveCell(td) {
@@ -523,6 +541,29 @@
         n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
       )
     );
+  }
+
+  function initColumnResize() {
+    document.querySelectorAll('.col-resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const th = this.parentElement;
+        const startX = e.pageX;
+        const startW = th.offsetWidth;
+        this.classList.add('active');
+        const onMove = (ev) => {
+          th.style.width = Math.max(50, startW + ev.pageX - startX) + 'px';
+        };
+        const onUp = () => {
+          this.classList.remove('active');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    });
   }
 
   function escHtml(s) {

@@ -165,7 +165,9 @@ def upload_page():
 
 @app.route("/frontend.html")
 def frontend():
-    return send_from_directory(".", "frontend.html")
+    resp = send_from_directory(".", "frontend.html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
 
 @app.route("/gpt_catalogue_progress.json")
 def progress_json():
