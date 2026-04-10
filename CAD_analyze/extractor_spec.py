@@ -99,20 +99,26 @@ Rules:
         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
     ])
 
-    try:
-        response = llm.invoke([msg]).content.strip()
-        print(f"  [SPEC p{page_num}] raw response ({len(response)} chars): {response[:300]}")
-        if response.startswith("```"):
-            response = response.split("```")[1]
-            if response.startswith("json"):
-                response = response[4:]
-        return json.loads(response)
-    except json.JSONDecodeError as e:
-        print(f"  [SPEC p{page_num}] JSON parse error: {e}\n  Response was: {response[:500]}")
-        return {}
-    except Exception as e:
-        print(f"  [SPEC p{page_num}] LLM error: {type(e).__name__}: {e}")
-        return {}
+    for attempt in range(4):
+        try:
+            response = llm.invoke([msg]).content.strip()
+            print(f"  [SPEC p{page_num}] raw response ({len(response)} chars): {response[:300]}")
+            if response.startswith("```"):
+                response = response.split("```")[1]
+                if response.startswith("json"):
+                    response = response[4:]
+            return json.loads(response)
+        except json.JSONDecodeError as e:
+            print(f"  [SPEC p{page_num}] JSON parse error: {e}\n  Response was: {response[:500]}")
+            return {}
+        except Exception as e:
+            if "rate_limit" in str(e).lower() and attempt < 3:
+                wait = 2 ** attempt
+                print(f"  [SPEC p{page_num}] rate limited, retrying in {wait}s…")
+                time.sleep(wait)
+                continue
+            print(f"  [SPEC p{page_num}] LLM error: {type(e).__name__}: {e}")
+            return {}
 
 
 def run_spec_extraction(job_id: str, files: list[dict], jobs: dict):
@@ -154,6 +160,7 @@ def run_spec_extraction(job_id: str, files: list[dict], jobs: dict):
                 job["log"].append(f"[{filename}] page {page_num}/{n_pages}…")
 
                 result = extract_spec_page(pdf_bytes, page_num, llm, prev_doc_ref, prev_material_names)
+                time.sleep(1)
 
                 doc_ref = result.get("document_ref") or prev_doc_ref or "UNKNOWN"
                 doc_title = result.get("document_title", "")

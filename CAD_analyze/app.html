@@ -187,20 +187,52 @@ tbody tr:hover td{background:#fafbff}
         <div class="file-list" id="list-cad"></div>
       </div>
 
-      <!-- Spec -->
-      <div class="upload-card" id="zone-spec"
-           onclick="document.getElementById('input-spec').click()"
-           ondragover="onDrag(event,'spec')" ondrop="onDrop(event,'spec')" ondragleave="onDragLeave('spec')">
-        <input type="file" id="input-spec" multiple accept=".pdf" onchange="addFiles('spec',this.files)"/>
+      <!-- Spec: company selector -->
+      <div class="upload-card" id="zone-spec" style="cursor:default">
         <div class="uc-icon">📋</div>
         <h3>Specification Documents</h3>
-        <p>ADNOC AGES specs, construction standards<br>System extracts spec refs, approved vendors, and international standards</p>
+        <p>Select an existing company's specs or add a new one</p>
         <div class="file-types">
           <span class="tag tag-blue">PDF</span>
           <span class="tag tag-green">Optional</span>
         </div>
-        <button class="btn btn-primary" style="margin-top:14px;pointer-events:none">+ Select Files</button>
+
+        <div style="margin-top:14px;text-align:left;width:100%">
+          <select id="sel-spec-company" onchange="onSpecCompanyChange()" style="width:100%;padding:8px 12px;border:1px solid #dde0e8;border-radius:8px;font-size:12px;background:#fff">
+            <option value="">— No spec (skip) —</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-secondary" onclick="showNewCompanyModal(event)">+ New Company</button>
+          <button class="btn btn-secondary" id="btn-add-spec-files" style="display:none" onclick="document.getElementById('input-add-spec').click(); event.stopPropagation();">+ Add Files</button>
+          <input type="file" id="input-add-spec" multiple accept=".pdf" style="display:none" onchange="addFilesToCompany(this.files)"/>
+        </div>
+
         <div class="file-list" id="list-spec"></div>
+      </div>
+    </div>
+
+    <!-- New Company modal -->
+    <div id="modal-new-company" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:14px;padding:28px 30px;width:460px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+        <h3 style="margin-bottom:16px;font-size:16px">Add New Spec Company</h3>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Company Name *</label>
+          <input id="inp-company-name" placeholder="e.g. ADNOC AGES" style="width:100%;padding:8px 12px;border:1px solid #dde0e8;border-radius:8px;font-size:12px"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Spec PDF Files *</label>
+          <div style="border:2px dashed #dde0e8;border-radius:8px;padding:16px;text-align:center;cursor:pointer" onclick="document.getElementById('inp-company-files').click()">
+            <input type="file" id="inp-company-files" multiple accept=".pdf" style="display:none"/>
+            <div style="font-size:13px;color:#888">Click to select PDF files</div>
+            <div id="new-company-file-list" style="margin-top:8px;font-size:12px;color:#444"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-secondary" onclick="hideNewCompanyModal()">Cancel</button>
+          <button class="btn btn-primary" id="btn-save-company" onclick="saveNewCompany()">Save & Select</button>
+        </div>
       </div>
     </div>
 
@@ -331,6 +363,8 @@ const state = {
   cadDone:    false,
   specDone:   false,
   genId:      null,
+  selectedCompanyId: null,
+  specCompanies: [],
 };
 
 // ── Load project metadata on startup ─────────────────────────────────────────
@@ -372,6 +406,147 @@ function renderExistingFiles(type, fileNames) {
   ).join('');
   zoneEl.classList.add('has-files');
 }
+
+// ── Spec library ─────────────────────────────────────────────────────────────
+async function loadSpecCompanies() {
+  try {
+    const resp = await fetch('/api/spec-library');
+    const data = await resp.json();
+    state.specCompanies = data.companies || [];
+    renderSpecSelect();
+  } catch(e) {
+    console.error('Failed to load spec companies', e);
+  }
+}
+
+function renderSpecSelect() {
+  const sel = document.getElementById('sel-spec-company');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— No spec (skip) —</option>';
+  for (const c of state.specCompanies) {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = `${c.company_name} (${c.files.length} file${c.files.length !== 1 ? 's' : ''})`;
+    sel.appendChild(opt);
+  }
+  if (prev) sel.value = prev;
+  onSpecCompanyChange();
+}
+
+function onSpecCompanyChange() {
+  const sel = document.getElementById('sel-spec-company');
+  const companyId = sel.value;
+  state.selectedCompanyId = companyId || null;
+
+  const listEl = document.getElementById('list-spec');
+  const zoneEl = document.getElementById('zone-spec');
+  const addBtn = document.getElementById('btn-add-spec-files');
+
+  if (!companyId) {
+    listEl.innerHTML = '';
+    zoneEl.classList.remove('has-files');
+    addBtn.style.display = 'none';
+    state.specFiles = [];
+    return;
+  }
+
+  addBtn.style.display = 'inline-block';
+
+  const company = state.specCompanies.find(c => String(c.id) === companyId);
+  if (company && company.files.length) {
+    listEl.innerHTML = company.files.map(f =>
+      `<div class="file-row">
+        <span>📄</span>
+        <span class="fn">${f.filename}</span>
+        <span class="fsz" style="color:#28a745">${f.size_bytes ? (f.size_bytes/1024/1024).toFixed(1)+' MB' : ''}</span>
+      </div>`
+    ).join('');
+    zoneEl.classList.add('has-files');
+  } else {
+    listEl.innerHTML = '<div style="font-size:12px;color:#888;margin-top:8px">No files yet — click "+ Add Files"</div>';
+  }
+}
+
+async function addFilesToCompany(fileList) {
+  if (!state.selectedCompanyId || !fileList.length) return;
+
+  const company = state.specCompanies.find(c => String(c.id) === state.selectedCompanyId);
+  const existingNames = new Set(company ? company.files.map(f => f.filename) : []);
+  const newFiles = Array.from(fileList).filter(f => !existingNames.has(f.name));
+
+  if (!newFiles.length) {
+    alert('All selected files already exist for this company.');
+    return;
+  }
+
+  const fd = new FormData();
+  for (const f of newFiles) fd.append('files', f);
+
+  try {
+    const resp = await fetch(`/api/spec-library/${state.selectedCompanyId}/files`, { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (data.error) { alert(data.error); return; }
+
+    await loadSpecCompanies();
+    document.getElementById('sel-spec-company').value = state.selectedCompanyId;
+    onSpecCompanyChange();
+  } catch(e) {
+    alert('Upload failed: ' + e.message);
+  }
+  document.getElementById('input-add-spec').value = '';
+}
+
+function showNewCompanyModal(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('modal-new-company').style.display = 'flex';
+  document.getElementById('inp-company-name').value = '';
+  document.getElementById('inp-company-files').value = '';
+  document.getElementById('new-company-file-list').innerHTML = '';
+}
+
+function hideNewCompanyModal() {
+  document.getElementById('modal-new-company').style.display = 'none';
+}
+
+document.getElementById('inp-company-files').addEventListener('change', function() {
+  const el = document.getElementById('new-company-file-list');
+  el.innerHTML = Array.from(this.files).map(f =>
+    `<div>📄 ${f.name} (${(f.size/1024/1024).toFixed(1)} MB)</div>`
+  ).join('');
+});
+
+async function saveNewCompany() {
+  const name = document.getElementById('inp-company-name').value.trim();
+  const filesInput = document.getElementById('inp-company-files');
+  if (!name) { alert('Company name is required'); return; }
+  if (!filesInput.files.length) { alert('Please select at least one spec PDF'); return; }
+
+  const btn = document.getElementById('btn-save-company');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const fd = new FormData();
+    fd.append('company_name', name);
+    for (const f of filesInput.files) fd.append('files', f);
+
+    const resp = await fetch('/api/spec-library', { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (data.error) { alert(data.error); return; }
+
+    hideNewCompanyModal();
+    await loadSpecCompanies();
+    document.getElementById('sel-spec-company').value = String(data.company.id);
+    onSpecCompanyChange();
+  } catch(e) {
+    alert('Failed to save: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save & Select';
+  }
+}
+
+loadSpecCompanies();
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 function goTo(name, el) {
@@ -433,8 +608,16 @@ async function startExtraction() {
   const cadData = await cadResp.json();
   state.cadJobId = cadData.job_id;
 
-  // Upload Spec (optional)
-  if (state.specFiles.length > 0) {
+  // Upload Spec (optional — from company library or direct files)
+  if (state.selectedCompanyId) {
+    const specFd = new FormData();
+    specFd.append('company_id', state.selectedCompanyId);
+    if (PROJECT_ID) specFd.append('project_id', PROJECT_ID);
+    const specResp = await fetch('/upload-spec', { method: 'POST', body: specFd });
+    const specData = await specResp.json();
+    state.specJobId = specData.job_id;
+    setPill('spec', 'processing');
+  } else if (state.specFiles.length > 0) {
     const specFd = new FormData();
     state.specFiles.forEach(f => specFd.append('files', f));
     if (PROJECT_ID) specFd.append('project_id', PROJECT_ID);
@@ -445,7 +628,7 @@ async function startExtraction() {
   } else {
     state.specDone = true;
     setPill('spec', 'done');
-    document.getElementById('pct-spec').textContent = 'No spec files uploaded';
+    document.getElementById('pct-spec').textContent = 'No spec selected';
   }
 
   setPill('cad', 'processing');

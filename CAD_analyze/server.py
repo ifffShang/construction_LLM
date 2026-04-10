@@ -19,6 +19,7 @@ from extractor_cad  import run_cad_extraction
 from extractor_spec import run_spec_extraction
 from merger         import merge
 from excel_writer   import write_tracker
+import database as db
 
 BASE_DIR = os.path.dirname(__file__)
 app = Flask(__name__, static_folder=BASE_DIR)
@@ -31,44 +32,7 @@ PROJECTS_DIR = os.path.join(BASE_DIR, "projects")
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
 os.makedirs(PROJECTS_DIR, exist_ok=True)
 
-
-# ── project helpers ────────────────────────────────────────────────────────────
-
-def _projects_index_path() -> str:
-    return os.path.join(PROJECTS_DIR, "_index.json")
-
-
-def _load_projects() -> list[dict]:
-    path = _projects_index_path()
-    if not os.path.exists(path):
-        return []
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def _save_projects(projects: list[dict]):
-    with open(_projects_index_path(), "w", encoding="utf-8") as f:
-        json.dump(projects, f, ensure_ascii=False, indent=2)
-
-
-def _get_project(project_id: str) -> dict | None:
-    for p in _load_projects():
-        if p["id"] == project_id:
-            return p
-    return None
-
-
-def _update_project(project_id: str, updates: dict):
-    projects = _load_projects()
-    for p in projects:
-        if p["id"] == project_id:
-            p.update(updates)
-            break
-    _save_projects(projects)
-
-
-def _project_dir(project_id: str) -> str:
-    return os.path.join(PROJECTS_DIR, project_id)
+db.init_db()
 
 
 # ── generic helpers ────────────────────────────────────────────────────────────
@@ -90,24 +54,20 @@ def _read_uploaded_files(request_files_key: str) -> list[dict]:
 
 
 def _save_files_to_project(project_id: str, file_type: str, files: list[dict]):
-    """Save uploaded files to disk and record them in the project index."""
-    pdir = os.path.join(_project_dir(project_id), file_type)
+    """Save uploaded files to disk and record them in the database."""
+    pdir = os.path.join(PROJECTS_DIR, project_id, file_type)
     os.makedirs(pdir, exist_ok=True)
-    saved_names = []
     for f in files:
         fpath = os.path.join(pdir, f["filename"])
         with open(fpath, "wb") as fp:
             fp.write(f["bytes"])
-        saved_names.append(f["filename"])
-
-    project = _get_project(project_id)
-    if project:
-        key = f"{file_type}_files"
-        existing = project.get(key, [])
-        for name in saved_names:
-            if name not in existing:
-                existing.append(name)
-        _update_project(project_id, {key: existing})
+        db.add_file(
+            project_id=project_id,
+            file_type=file_type,
+            filename=f["filename"],
+            stored_path=fpath,
+            size_bytes=len(f["bytes"]),
+        )
 
 
 # ── page routes ────────────────────────────────────────────────────────────────
@@ -119,7 +79,7 @@ def index():
 
 @app.route("/app/<project_id>")
 def project_app(project_id: str):
-    project = _get_project(project_id)
+    project = db.get_project(project_id)
     if not project:
         return "Project not found", 404
     return send_from_directory(BASE_DIR, "app.html")
@@ -129,8 +89,7 @@ def project_app(project_id: str):
 
 @app.route("/api/projects", methods=["GET"])
 def list_projects():
-    projects = _load_projects()
-    projects.sort(key=lambda p: p.get("created_at", ""), reverse=True)
+    projects = db.list_projects()
     return jsonify({"projects": projects})
 
 
@@ -142,31 +101,24 @@ def create_project():
         return jsonify({"error": "Project name is required"}), 400
 
     project_id = str(uuid.uuid4())[:12]
-    project = {
-        "id": project_id,
-        "name": name,
-        "owner": body.get("owner", ""),
-        "epcm": body.get("epcm", ""),
-        "project_no": body.get("project_no", ""),
-        "contractor": body.get("contractor", ""),
-        "sub_contractor": body.get("sub_contractor", ""),
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "cad_files": [],
-        "spec_files": [],
-    }
+    os.makedirs(os.path.join(PROJECTS_DIR, project_id), exist_ok=True)
 
-    os.makedirs(_project_dir(project_id), exist_ok=True)
-
-    projects = _load_projects()
-    projects.append(project)
-    _save_projects(projects)
+    project = db.create_project(
+        project_id=project_id,
+        name=name,
+        owner=body.get("owner", ""),
+        epcm=body.get("epcm", ""),
+        project_no=body.get("project_no", ""),
+        contractor=body.get("contractor", ""),
+        sub_contractor=body.get("sub_contractor", ""),
+    )
 
     return jsonify({"project_id": project_id, "project": project})
 
 
 @app.route("/api/projects/<project_id>", methods=["GET"])
 def get_project(project_id: str):
-    project = _get_project(project_id)
+    project = db.get_project(project_id)
     if not project:
         return jsonify({"error": "Not found"}), 404
     return jsonify({"project": project})
@@ -174,13 +126,148 @@ def get_project(project_id: str):
 
 @app.route("/api/projects/<project_id>", methods=["DELETE"])
 def delete_project(project_id: str):
-    projects = _load_projects()
-    projects = [p for p in projects if p["id"] != project_id]
-    _save_projects(projects)
-    pdir = _project_dir(project_id)
+    db.delete_project(project_id)
+    pdir = os.path.join(PROJECTS_DIR, project_id)
     if os.path.isdir(pdir):
         shutil.rmtree(pdir, ignore_errors=True)
     return jsonify({"ok": True})
+
+
+@app.route("/api/projects/<project_id>/files", methods=["GET"])
+def list_project_files(project_id: str):
+    """List all uploaded files for a project, optionally filtered by type."""
+    file_type = request.args.get("type")  # 'cad' or 'spec'
+    files = db.list_files(project_id, file_type)
+    return jsonify({"files": files})
+
+
+@app.route("/api/projects/<project_id>/files", methods=["DELETE"])
+def delete_project_file(project_id: str):
+    """Delete a specific file from a project."""
+    body = request.get_json(force=True)
+    file_type = body.get("file_type")
+    filename  = body.get("filename")
+    if not file_type or not filename:
+        return jsonify({"error": "file_type and filename required"}), 400
+
+    pdir = os.path.join(PROJECTS_DIR, project_id, file_type, filename)
+    if os.path.exists(pdir):
+        os.remove(pdir)
+    db.delete_file(project_id, file_type, filename)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/projects/<project_id>/jobs", methods=["GET"])
+def list_project_jobs(project_id: str):
+    """List all persisted jobs for a project."""
+    return jsonify({"jobs": db.list_jobs(project_id)})
+
+
+@app.route("/api/projects/<project_id>/materials", methods=["GET"])
+def list_project_materials(project_id: str):
+    """All extracted + merged tracker rows for a project.
+    Optional query params: building=<id>, material_name=<search>
+    """
+    building      = request.args.get("building")
+    material_name = request.args.get("material_name")
+    rows = db.list_materials(project_id=project_id, building=building,
+                             material_name=material_name)
+    return jsonify({"total": len(rows), "materials": rows})
+
+
+@app.route("/api/materials", methods=["GET"])
+def list_all_materials():
+    """All extracted materials across all projects.
+    Optional query params: project_id=, building=, material_name=
+    """
+    project_id    = request.args.get("project_id")
+    building      = request.args.get("building")
+    material_name = request.args.get("material_name")
+    rows = db.list_materials(project_id=project_id, building=building,
+                             material_name=material_name)
+    return jsonify({"total": len(rows), "materials": rows})
+
+
+# ── spec library API ───────────────────────────────────────────────────────────
+
+@app.route("/api/spec-library", methods=["GET"])
+def list_spec_companies():
+    return jsonify({"companies": db.list_spec_companies()})
+
+
+@app.route("/api/spec-library", methods=["POST"])
+def create_spec_company():
+    """Create a new company (or reuse existing) and upload its spec files."""
+    company_name = request.form.get("company_name", "").strip()
+    if not company_name:
+        return jsonify({"error": "company_name is required"}), 400
+
+    existing = db.find_spec_company_by_name(company_name)
+    if existing:
+        company = existing
+    else:
+        company = db.create_spec_company(company_name)
+    company_id = company["id"]
+
+    cdir = os.path.join(db.SPEC_LIB_DIR, str(company_id))
+    os.makedirs(cdir, exist_ok=True)
+
+    existing_names = {f["filename"] for f in company.get("files", [])}
+    uploaded = request.files.getlist("files")
+    for f in uploaded:
+        if f and f.filename and f.filename not in existing_names:
+            data = f.read()
+            fpath = os.path.join(cdir, f.filename)
+            with open(fpath, "wb") as fp:
+                fp.write(data)
+            db.add_spec_company_file(
+                company_id=company_id,
+                filename=f.filename,
+                stored_path=fpath,
+                size_bytes=len(data),
+            )
+
+    return jsonify({"company": db.get_spec_company(company_id)})
+
+
+@app.route("/api/spec-library/<int:company_id>", methods=["DELETE"])
+def delete_spec_company(company_id: int):
+    cdir = os.path.join(db.SPEC_LIB_DIR, str(company_id))
+    if os.path.isdir(cdir):
+        shutil.rmtree(cdir, ignore_errors=True)
+    db.delete_spec_company(company_id)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/spec-library/<int:company_id>/files", methods=["POST"])
+def upload_spec_company_files(company_id: int):
+    """Add more files to an existing spec company, skipping duplicates."""
+    company = db.get_spec_company(company_id)
+    if not company:
+        return jsonify({"error": "Company not found"}), 404
+
+    existing_names = {f["filename"] for f in company.get("files", [])}
+    cdir = os.path.join(db.SPEC_LIB_DIR, str(company_id))
+    os.makedirs(cdir, exist_ok=True)
+
+    uploaded = request.files.getlist("files")
+    added = 0
+    for f in uploaded:
+        if f and f.filename and f.filename not in existing_names:
+            data = f.read()
+            fpath = os.path.join(cdir, f.filename)
+            with open(fpath, "wb") as fp:
+                fp.write(data)
+            db.add_spec_company_file(
+                company_id=company_id,
+                filename=f.filename,
+                stored_path=fpath,
+                size_bytes=len(data),
+            )
+            existing_names.add(f.filename)
+            added += 1
+
+    return jsonify({"company": db.get_spec_company(company_id), "added": added})
 
 
 # ── upload / extraction endpoints ──────────────────────────────────────────────
@@ -196,9 +283,10 @@ def upload_cad():
         _save_files_to_project(project_id, "cad", files)
 
     job_id, job = _new_job()
+    db.upsert_job(job_id, project_id or None, "cad", "queued", 0, 0, [])
     thread = threading.Thread(
-        target=run_cad_extraction,
-        args=(job_id, files, jobs),
+        target=_run_and_persist,
+        args=(run_cad_extraction, job_id, files, jobs, project_id or None, "cad"),
         daemon=True,
     )
     thread.start()
@@ -207,27 +295,54 @@ def upload_cad():
 
 @app.route("/upload-spec", methods=["POST"])
 def upload_spec():
-    files = _read_uploaded_files("files")
+    company_id = request.form.get("company_id", "")
+    project_id = request.form.get("project_id", "")
+
+    if company_id:
+        files = db.load_spec_company_file_bytes(int(company_id))
+    else:
+        files = _read_uploaded_files("files")
+
     if not files:
         return jsonify({"error": "No files provided"}), 400
 
-    project_id = request.form.get("project_id", "")
     if project_id:
         _save_files_to_project(project_id, "spec", files)
 
     job_id, job = _new_job()
+    db.upsert_job(job_id, project_id or None, "spec", "queued", 0, 0, [])
     thread = threading.Thread(
-        target=run_spec_extraction,
-        args=(job_id, files, jobs),
+        target=_run_and_persist,
+        args=(run_spec_extraction, job_id, files, jobs, project_id or None, "spec"),
         daemon=True,
     )
     thread.start()
     return jsonify({"job_id": job_id})
 
 
+def _run_and_persist(run_fn, job_id: str, files, jobs_dict: dict,
+                     project_id: str | None, job_type: str):
+    """Wrapper that runs an extraction function and persists the final state to DB."""
+    run_fn(job_id, files, jobs_dict)
+    job = jobs_dict.get(job_id, {})
+    db.upsert_job(
+        job_id=job_id,
+        project_id=project_id,
+        job_type=job_type,
+        status=job.get("status", "done"),
+        progress=job.get("progress", 0),
+        total=job.get("total", 0),
+        log=job.get("log", []),
+        result=job.get("result"),
+    )
+
+
 @app.route("/job/<job_id>")
 def job_status(job_id: str):
     job = jobs.get(job_id)
+    if not job:
+        # fall back to DB for jobs from previous server sessions
+        job = db.get_job(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
     return jsonify({
@@ -276,12 +391,12 @@ def _job_summary(job: dict) -> dict:
 @app.route("/generate", methods=["POST"])
 def generate():
     body = request.get_json(force=True)
-    cad_job_id  = body.get("cad_job_id", "")
-    spec_job_id = body.get("spec_job_id", "")
+    cad_job_id   = body.get("cad_job_id", "")
+    spec_job_id  = body.get("spec_job_id", "")
     project_meta = body.get("project_metadata", {})
 
-    cad_job  = jobs.get(cad_job_id)
-    spec_job = jobs.get(spec_job_id)
+    cad_job  = jobs.get(cad_job_id) or db.get_job(cad_job_id)
+    spec_job = jobs.get(spec_job_id) or (db.get_job(spec_job_id) if spec_job_id else None)
 
     if not cad_job or cad_job["status"] != "done":
         return jsonify({"error": "CAD extraction not complete"}), 400
@@ -309,16 +424,30 @@ def generate():
         return jsonify({"error": f"Excel generation failed: {e}"}), 500
 
     gen_id = str(uuid.uuid4())
+    project_id = project_meta.get("project_id") or None
+    stats = {
+        "total_rows": len(merged["rows"]),
+        "buildings":  len(merged["quantity_basis"]),
+        "no_spec":  sum(1 for r in merged["rows"] if not r.get("adnoc_spec_ref")),
+    }
     jobs[gen_id] = {
         "status": "done",
         "file": output_path,
         "filename": output_filename,
-        "stats": {
-            "total_rows": len(merged["rows"]),
-            "buildings":  len(merged["quantity_basis"]),
-            "no_spec":  sum(1 for r in merged["rows"] if not r.get("adnoc_spec_ref")),
-        },
+        "stats": stats,
     }
+    db.upsert_job(
+        job_id=gen_id,
+        project_id=project_id,
+        job_type="generate",
+        status="done",
+        progress=0,
+        total=0,
+        log=[],
+        result={"filename": output_filename, "stats": stats},
+    )
+    if project_id:
+        db.save_tracker_rows(project_id, gen_id, merged["rows"])
 
     return jsonify({
         "gen_id":   gen_id,

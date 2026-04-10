@@ -24,7 +24,7 @@ def _get_llm():
     )
 
 
-def page_to_base64(pdf_bytes: bytes, page_num: int, dpi: int = 200) -> str:
+def page_to_base64(pdf_bytes: bytes, page_num: int, dpi: int = 120) -> str:
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     page = doc[page_num - 1]
     pix = page.get_pixmap(dpi=dpi)
@@ -93,20 +93,26 @@ Rules:
         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
     ])
 
-    try:
-        response = llm.invoke([msg]).content.strip()
-        print(f"  [CAD p{page_num}] raw response ({len(response)} chars): {response[:300]}")
-        if response.startswith("```"):
-            response = response.split("```")[1]
-            if response.startswith("json"):
-                response = response[4:]
-        return json.loads(response)
-    except json.JSONDecodeError as e:
-        print(f"  [CAD p{page_num}] JSON parse error: {e}\n  Response was: {response[:500]}")
-        return {}
-    except Exception as e:
-        print(f"  [CAD p{page_num}] LLM error: {type(e).__name__}: {e}")
-        return {}
+    for attempt in range(4):
+        try:
+            response = llm.invoke([msg]).content.strip()
+            print(f"  [CAD p{page_num}] raw response ({len(response)} chars): {response[:300]}")
+            if response.startswith("```"):
+                response = response.split("```")[1]
+                if response.startswith("json"):
+                    response = response[4:]
+            return json.loads(response)
+        except json.JSONDecodeError as e:
+            print(f"  [CAD p{page_num}] JSON parse error: {e}\n  Response was: {response[:500]}")
+            return {}
+        except Exception as e:
+            if "rate_limit" in str(e).lower() and attempt < 3:
+                wait = 2 ** attempt
+                print(f"  [CAD p{page_num}] rate limited, retrying in {wait}s…")
+                time.sleep(wait)
+                continue
+            print(f"  [CAD p{page_num}] LLM error: {type(e).__name__}: {e}")
+            return {}
 
 
 def run_cad_extraction(job_id: str, files: list[dict], jobs: dict):
@@ -145,6 +151,7 @@ def run_cad_extraction(job_id: str, files: list[dict], jobs: dict):
                 job["log"].append(f"[{filename}] page {page_num}/{n_pages}…")
 
                 result = extract_cad_page(pdf_bytes, page_num, llm, prev_building_id, filename)
+                time.sleep(1)
 
                 building_id = result.get("building_id") or prev_building_id
                 if not building_id:
