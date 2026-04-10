@@ -1,0 +1,73 @@
+[
+  {
+    "id": "d22ab241-4a9",
+    "name": "test_proj",
+    "owner": "test_owner",
+    "epcm": "test_epcm",
+    "project_no": "123456",
+    "contractor": "",
+    "sub_contractor": "",
+    "created_at": "2026-04-10T19:21:05.098861+00:00",
+    "cad_files": [
+      "30201_50150_LT_HE-H4-278-17-23-001_1_IES201仪表电气间-结构图(新版）.pdf",
+      "30201_50150_LT_HE-H4-278-17-23-001_UNIT 278_IES-201_(IFC)_ IES-203 仪表电气间-结构图（旧版）.pdf",
+      "30201_50150_LT_HE-H4-278-20-22-001_UNIT 278_IES-201_(IFCH)_ IES-201 仪表电气间-建筑图.pdf",
+      "30201_50150_LT_HE-H4-280-17-23-001_UNIT 213_SS#201_(IFCH)_213单元SS-201变电站结构图(旧版).pdf",
+      "30201_50150_LT_HE-H4-280-17-23-001-1_UNIT 213_SS#201_(IFC)_213单元SS-201变电站结构图(升版).pdf",
+      "30201_50150_LT_HE-H4-280-20-22-001_UNIT 213_SS#201_(IFCH)_213单元SS-201变电站建筑图.pdf",
+      "变电站SS201基础平面布置图.pdf"
+    ],
+    "spec_files": [
+      "30201_50150_LT_HE-ADD-6300-004_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-001_B.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-002_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-004_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-003_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-006_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-007_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-51-00-002_B.pdf",
+      "PP-30201_50150_LT_HE-GG-000-51-00-005_B.pdf",
+      "PP-30201_50150_LT_HE-GG-000-51-00-006_B.pdf",
+      "PP-30201_50150_LT_HE-GG-000-51-00-007_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-53-00-001_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-69-00-003_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-69-00-004_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-69-00-005_A.pdf",
+      "30201_50150_LT_HE-H4-280-17-23-001_UNIT 213_SS#201_(IFCH)_213单元SS-201变电站结构图(旧版).pdf"
+    ]
+  },
+  {
+    "id": "b8b152cb-b16",
+    "name": "test1",
+    "owner": "333",
+    "epcm": "333",
+    "project_no": "333",
+    "contractor": "",
+    "sub_contractor": "",
+    "created_at": "2026-04-10T19:26:49.023660+00:00",
+    "cad_files": [
+      "30201_50150_LT_HE-H4-280-17-23-001_UNIT 213_SS#201_(IFCH)_213单元SS-201变电站结构图(旧版).pdf",
+      "30201_50150_LT_HE-H4-280-17-23-001-1_UNIT 213_SS#201_(IFC)_213单元SS-201变电站结构图(升版).pdf",
+      "30201_50150_LT_HE-H4-280-20-22-001_UNIT 213_SS#201_(IFCH)_213单元SS-201变电站建筑图.pdf",
+      "变电站SS201基础平面布置图.pdf"
+    ],
+    "spec_files": [
+      "30201_50150_LT_HE-ADD-6300-004_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-001_B.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-002_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-003_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-004_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-006_0.pdf",
+      "30201_50150_LT_HE-ADD-SP-07-007_A.pdf",
+      "PP-30201_50150_LT_HE-GG-000-51-00-002_B.pdf",
+      "Anchor Bolts and Grouting Specification.pdf",
+      "Architectural Design Basis.pdf",
+      "Architectural Finishes and Furnishing.pdf",
+      "Assessment and Structural Adequacy Check of Existing Structures and Pipe Racks.pdf",
+      "Civil Construction Materials Sampling and Testing Specification.pdf",
+      "Concrete Supply and Construction Specification.pdf",
+      "Drainage Systems - Design and Construction Specification.pdf",
+      "Green Buildings Guidelines.pdf"
+    ]
+  }
+]

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Construction Material Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ── */
+#sidebar{width:230px;min-width:230px;background:#1a1a2e;color:#e0e0e0;display:flex;flex-direction:column}
+#sidebar-header{padding:22px 20px 14px;border-bottom:1px solid #2d2d4e}
+#sidebar-header h1{font-size:14px;font-weight:700;color:#fff;letter-spacing:.4px}
+#sidebar-header p{font-size:11px;color:#8888aa;margin-top:3px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;font-size:13px;color:#aaaacc;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:#252540;color:#fff}
+.nav-item.active{background:#1e3a6e;border-left-color:#4f8ef7;color:#fff;font-weight:600}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.step-badge{margin-left:auto;font-size:10px;background:#2d2d4e;color:#8888aa;padding:2px 7px;border-radius:10px}
+.nav-item.active .step-badge{background:#4f8ef7;color:#fff}
+.nav-item.done .step-badge{background:#28a745;color:#fff}
+
+/* ── Main ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.page{display:none;flex:1;flex-direction:column;overflow:hidden}
+.page.active{display:flex}
+
+.topbar{background:#fff;padding:16px 26px;border-bottom:1px solid #e8eaf0;display:flex;align-items:center;justify-content:space-between}
+.topbar h2{font-size:17px;font-weight:700}
+.topbar p{font-size:11px;color:#888;margin-top:2px}
+
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:#4f8ef7;color:#fff}
+.btn-primary:hover:not(:disabled){background:#3a7ae0}
+.btn-secondary{background:#f0f2f5;color:#444;border:1px solid #dde0e8}
+.btn-secondary:hover:not(:disabled){background:#e4e8f0}
+.btn-success{background:#e8f7ef;color:#28a745;border:1px solid #c3e6cb}
+.btn-success:hover:not(:disabled){background:#d0f0df}
+.btn-danger{background:#fff0f0;color:#e05555;border:1px solid #fdd}
+
+/* ── Cards ── */
+.card{background:#fff;border-radius:12px;border:1px solid #e8eaf0;overflow:hidden;margin-bottom:20px}
+.card-header{padding:14px 20px;border-bottom:1px solid #e8eaf0;display:flex;justify-content:space-between;align-items:center}
+.card-header h3{font-size:14px;font-weight:700}
+
+/* ── Upload cards ── */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.upload-card{background:#fff;border-radius:12px;border:2px dashed #dde0e8;padding:28px 22px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-card.dragover,.upload-card:hover{border-color:#4f8ef7;background:#f5f8ff}
+.upload-card.has-files{border-style:solid;border-color:#28a745;background:#f5fff8}
+.upload-card .uc-icon{font-size:36px;margin-bottom:10px}
+.upload-card h3{font-size:14px;font-weight:700;margin-bottom:5px}
+.upload-card p{font-size:12px;color:#888}
+.upload-card input[type=file]{display:none}
+.tag{padding:3px 9px;border-radius:14px;font-size:11px;font-weight:600}
+.tag-blue{background:#e8f0ff;color:#4f8ef7}
+.tag-green{background:#e8f7ef;color:#28a745}
+.tag-gray{background:#f0f2f5;color:#666}
+.tag-orange{background:#fff3e0;color:#f57c00}
+.tag-red{background:#fff0f0;color:#e05555}
+.file-types{margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+
+/* ── File list ── */
+.file-list{margin-top:8px;text-align:left}
+.file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#f5f8ff;margin-top:6px;font-size:12px}
+.file-row .fn{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-row .fsz{color:#888}
+
+/* ── Progress ── */
+.progress-wrap{background:#f0f2f5;border-radius:4px;height:6px;margin:10px 0;overflow:hidden}
+.progress-bar{height:6px;border-radius:4px;background:#4f8ef7;transition:width .3s}
+.progress-bar.done{background:#28a745}
+.progress-bar.error{background:#e05555}
+.log-box{background:#1a1a2e;color:#a8d8a8;font-family:monospace;font-size:11px;border-radius:8px;padding:12px;max-height:160px;overflow-y:auto;margin-top:10px}
+.log-line{margin-bottom:2px}
+
+/* ── Status pill ── */
+.status-pill{padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600}
+.s-queued{background:#f0f2f5;color:#666}
+.s-processing{background:#fff3e0;color:#f57c00}
+.s-done{background:#e8f7ef;color:#28a745}
+.s-error{background:#fff0f0;color:#e05555}
+
+/* ── Review tables ── */
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#666;background:#fafbfc;border-bottom:1px solid #e8eaf0;text-transform:uppercase;letter-spacing:.4px}
+tbody td{padding:10px 14px;font-size:12px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+tbody tr:hover td{background:#fafbff}
+
+/* ── Metadata form ── */
+.meta-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.form-group label{font-size:11px;font-weight:700;color:#666;display:block;margin-bottom:4px}
+.form-group input{width:100%;padding:8px 12px;border:1px solid #dde0e8;border-radius:8px;font-size:12px;outline:none}
+.form-group input:focus{border-color:#4f8ef7}
+
+/* ── Generate summary ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:#fff;border-radius:10px;border:1px solid #e8eaf0;padding:18px;text-align:center}
+.stat-card .sv{font-size:26px;font-weight:700;margin-top:6px}
+.stat-card .sl{font-size:11px;color:#888}
+.blue{color:#4f8ef7}.green{color:#28a745}.orange{color:#f57c00}
+
+/* ── scrollbar ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#dde0e8;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>Material Tracker</h1>
+    <p id="sidebar-project-name" style="font-size:11px;color:#8888aa;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></p>
+  </div>
+  <a href="/" class="nav-item" style="text-decoration:none;color:#aaaacc;border-bottom:1px solid #2d2d4e;margin-bottom:4px">
+    <span class="nav-icon">←</span> Back to Projects
+  </a>
+  <div class="nav-item active" id="nav-upload" onclick="goTo('upload',this)">
+    <span class="nav-icon">📁</span> Upload Files
+    <span class="step-badge" id="badge-upload">1</span>
+  </div>
+  <div class="nav-item" id="nav-review" onclick="goTo('review',this)">
+    <span class="nav-icon">🔍</span> Review Extraction
+    <span class="step-badge" id="badge-review">2</span>
+  </div>
+  <div class="nav-item" id="nav-generate" onclick="goTo('generate',this)">
+    <span class="nav-icon">⚡</span> Generate Tracker
+    <span class="step-badge" id="badge-generate">3</span>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div id="main">
+
+<!-- ════ PAGE 1: UPLOAD ════ -->
+<div class="page active" id="page-upload">
+  <div class="topbar">
+    <div><h2>Upload Files</h2><p>Upload CAD drawing PDFs and specification documents</p></div>
+    <button class="btn btn-primary" id="btn-start-extraction" onclick="startExtraction()" disabled>
+      ▶ Start Extraction
+    </button>
+  </div>
+  <div class="content">
+
+    <!-- Project metadata -->
+    <div class="card">
+      <div class="card-header"><h3>Project Metadata</h3></div>
+      <div style="padding:18px">
+        <div class="meta-form">
+          <div class="form-group"><label>Project Name</label>
+            <input id="m-project" placeholder="Project name"/></div>
+          <div class="form-group"><label>Owner</label>
+            <input id="m-owner" placeholder="Owner"/></div>
+          <div class="form-group"><label>EPCM</label>
+            <input id="m-epcm" placeholder="EPCM"/></div>
+          <div class="form-group"><label>Contractor</label>
+            <input id="m-contractor" placeholder="Contractor"/></div>
+          <div class="form-group"><label>Sub-Contractor</label>
+            <input id="m-subcontractor" placeholder="Sub-contractor"/></div>
+          <div class="form-group"><label>Project No.</label>
+            <input id="m-projno" placeholder="Project number"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload zones -->
+    <div class="upload-grid">
+      <!-- CAD -->
+      <div class="upload-card" id="zone-cad"
+           onclick="document.getElementById('input-cad').click()"
+           ondragover="onDrag(event,'cad')" ondrop="onDrop(event,'cad')" ondragleave="onDragLeave('cad')">
+        <input type="file" id="input-cad" multiple accept=".pdf" onchange="addFiles('cad',this.files)"/>
+        <div class="uc-icon">📐</div>
+        <h3>CAD Drawing PDFs</h3>
+        <p>Architectural & structural drawings<br>System reads every page for material callouts, dimensions, and building IDs</p>
+        <div class="file-types">
+          <span class="tag tag-blue">PDF</span>
+          <span class="tag tag-gray">Multi-file</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;pointer-events:none">+ Select Files</button>
+        <div class="file-list" id="list-cad"></div>
+      </div>
+
+      <!-- Spec -->
+      <div class="upload-card" id="zone-spec"
+           onclick="document.getElementById('input-spec').click()"
+           ondragover="onDrag(event,'spec')" ondrop="onDrop(event,'spec')" ondragleave="onDragLeave('spec')">
+        <input type="file" id="input-spec" multiple accept=".pdf" onchange="addFiles('spec',this.files)"/>
+        <div class="uc-icon">📋</div>
+        <h3>Specification Documents</h3>
+        <p>ADNOC AGES specs, construction standards<br>System extracts spec refs, approved vendors, and international standards</p>
+        <div class="file-types">
+          <span class="tag tag-blue">PDF</span>
+          <span class="tag tag-green">Optional</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;pointer-events:none">+ Select Files</button>
+        <div class="file-list" id="list-spec"></div>
+      </div>
+    </div>
+
+    <!-- Extraction progress -->
+    <div class="card" id="extraction-card" style="display:none">
+      <div class="card-header">
+        <h3>Extraction Progress</h3>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span id="cad-status-pill" class="status-pill s-queued">CAD: queued</span>
+          <span id="spec-status-pill" class="status-pill s-queued">Spec: —</span>
+        </div>
+      </div>
+      <div style="padding:16px 20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#444">CAD Drawings</div>
+            <div class="progress-wrap"><div class="progress-bar" id="pb-cad" style="width:0%"></div></div>
+            <div style="font-size:11px;color:#888;margin-top:4px" id="pct-cad">0 / 0 pages</div>
+            <div class="log-box" id="log-cad"></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#444">Spec Documents</div>
+            <div class="progress-wrap"><div class="progress-bar" id="pb-spec" style="width:0%"></div></div>
+            <div style="font-size:11px;color:#888;margin-top:4px" id="pct-spec">—</div>
+            <div class="log-box" id="log-spec"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ PAGE 2: REVIEW ════ -->
+<div class="page" id="page-review">
+  <div class="topbar">
+    <div><h2>Review Extraction</h2><p>Verify what was found before generating the tracker</p></div>
+    <button class="btn btn-primary" onclick="goTo('generate',document.getElementById('nav-generate'))">
+      Continue → Generate ⚡
+    </button>
+  </div>
+  <div class="content">
+
+    <!-- CAD summary -->
+    <div class="card">
+      <div class="card-header"><h3>CAD Extraction — Buildings Detected</h3></div>
+      <div id="cad-review-content" style="padding:16px 20px;color:#888;font-size:13px">
+        Run extraction first.
+      </div>
+    </div>
+
+    <!-- Spec summary -->
+    <div class="card">
+      <div class="card-header"><h3>Spec Extraction — Documents Detected</h3></div>
+      <div id="spec-review-content" style="padding:16px 20px;color:#888;font-size:13px">
+        No spec documents uploaded, or extraction not yet complete.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ PAGE 3: GENERATE ════ -->
+<div class="page" id="page-generate">
+  <div class="topbar">
+    <div><h2>Generate Tracker</h2><p>Cross-reference CAD + Spec data and export Excel</p></div>
+  </div>
+  <div class="content">
+
+    <div class="stat-grid" id="gen-stats" style="display:none">
+      <div class="stat-card">
+        <div class="sl">Total Rows</div>
+        <div class="sv blue" id="st-rows">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="sl">Buildings</div>
+        <div class="sv green" id="st-buildings">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="sl">No Spec Coverage</div>
+        <div class="sv orange" id="st-nospec">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Generate Excel Tracker</h3></div>
+      <div style="padding:20px">
+        <p style="font-size:13px;color:#555;margin-bottom:16px">
+          This will merge the CAD extraction and spec extraction results into an Excel file
+          matching the <strong>NHC_ADNOC_Architectural_Material_Tracker_by_Building</strong> format
+          (3 sheets: Material Tracker, Quantity Basis, AVL Reference).
+        </p>
+        <p style="font-size:12px;color:#888;margin-bottom:20px">
+          🟡 Amber rows = material in taxonomy but not explicitly called out in CAD drawings (review recommended)<br>
+          🟡 Yellow rows = HOLD items (cathodic protection, pending vendor)<br>
+          ✅ White/blue rows = confirmed by CAD material callouts
+        </p>
+        <div id="gen-not-ready" style="background:#fff3e0;border:1px solid #f57c00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#f57c00;display:none">
+          ⚠️ CAD extraction is not complete yet. Go back to <strong>Upload Files</strong>, upload your CAD PDFs and wait for extraction to finish before generating.
+        </div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <button class="btn btn-primary" id="btn-generate" onclick="generateTracker()" disabled>
+            ⚡ Generate Tracker
+          </button>
+          <a id="download-link" style="display:none">
+            <button class="btn btn-success">⬇ Download Excel</button>
+          </a>
+          <span id="gen-status" style="font-size:12px;color:#888"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- #main -->
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const pathParts = window.location.pathname.split('/');
+const PROJECT_ID = pathParts[2] || '';
+
+const state = {
+  cadFiles:   [],
+  specFiles:  [],
+  cadJobId:   null,
+  specJobId:  null,
+  cadDone:    false,
+  specDone:   false,
+  genId:      null,
+};
+
+// ── Load project metadata on startup ─────────────────────────────────────────
+(async function loadProject() {
+  if (!PROJECT_ID) return;
+  try {
+    const resp = await fetch(`/api/projects/${PROJECT_ID}`);
+    const data = await resp.json();
+    const p = data.project;
+    if (!p) return;
+
+    document.getElementById('sidebar-project-name').textContent = p.name;
+    document.title = p.name + ' – Material Tracker';
+
+    if (p.name) document.getElementById('m-project').value = p.name;
+    if (p.owner) document.getElementById('m-owner').value = p.owner;
+    if (p.epcm)  document.getElementById('m-epcm').value = p.epcm;
+    if (p.project_no) document.getElementById('m-projno').value = p.project_no;
+    if (p.contractor) document.getElementById('m-contractor').value = p.contractor;
+    if (p.sub_contractor) document.getElementById('m-subcontractor').value = p.sub_contractor;
+
+    renderExistingFiles('cad', p.cad_files || []);
+    renderExistingFiles('spec', p.spec_files || []);
+  } catch(e) {
+    console.error('Failed to load project', e);
+  }
+})();
+
+function renderExistingFiles(type, fileNames) {
+  if (!fileNames.length) return;
+  const listEl = document.getElementById('list-' + type);
+  const zoneEl = document.getElementById('zone-' + type);
+  listEl.innerHTML = fileNames.map(name =>
+    `<div class="file-row">
+      <span>📄</span>
+      <span class="fn">${name}</span>
+      <span class="fsz" style="color:#28a745">Uploaded</span>
+    </div>`
+  ).join('');
+  zoneEl.classList.add('has-files');
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function goTo(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── File handling ─────────────────────────────────────────────────────────────
+function addFiles(type, fileList) {
+  const arr = type === 'cad' ? state.cadFiles : state.specFiles;
+  const listEl = document.getElementById('list-' + type);
+  const zoneEl = document.getElementById('zone-' + type);
+
+  for (const f of fileList) {
+    if (!arr.find(x => x.name === f.name)) arr.push(f);
+  }
+
+  listEl.innerHTML = arr.map(f =>
+    `<div class="file-row">
+      <span>📄</span>
+      <span class="fn">${f.name}</span>
+      <span class="fsz">${(f.size/1024/1024).toFixed(1)} MB</span>
+    </div>`
+  ).join('');
+
+  if (arr.length) zoneEl.classList.add('has-files');
+  updateStartBtn();
+}
+
+function onDrag(e, type) {
+  e.preventDefault();
+  document.getElementById('zone-' + type).classList.add('dragover');
+}
+function onDragLeave(type) {
+  document.getElementById('zone-' + type).classList.remove('dragover');
+}
+function onDrop(e, type) {
+  e.preventDefault();
+  onDragLeave(type);
+  addFiles(type, e.dataTransfer.files);
+}
+
+function updateStartBtn() {
+  document.getElementById('btn-start-extraction').disabled = state.cadFiles.length === 0;
+}
+
+// ── Start extraction ──────────────────────────────────────────────────────────
+async function startExtraction() {
+  document.getElementById('extraction-card').style.display = 'block';
+  document.getElementById('btn-start-extraction').disabled = true;
+
+  // Upload CAD
+  const cadFd = new FormData();
+  state.cadFiles.forEach(f => cadFd.append('files', f));
+  if (PROJECT_ID) cadFd.append('project_id', PROJECT_ID);
+  const cadResp = await fetch('/upload-cad', { method: 'POST', body: cadFd });
+  const cadData = await cadResp.json();
+  state.cadJobId = cadData.job_id;
+
+  // Upload Spec (optional)
+  if (state.specFiles.length > 0) {
+    const specFd = new FormData();
+    state.specFiles.forEach(f => specFd.append('files', f));
+    if (PROJECT_ID) specFd.append('project_id', PROJECT_ID);
+    const specResp = await fetch('/upload-spec', { method: 'POST', body: specFd });
+    const specData = await specResp.json();
+    state.specJobId = specData.job_id;
+    setPill('spec', 'processing');
+  } else {
+    state.specDone = true;
+    setPill('spec', 'done');
+    document.getElementById('pct-spec').textContent = 'No spec files uploaded';
+  }
+
+  setPill('cad', 'processing');
+  pollJob('cad', state.cadJobId);
+  if (state.specJobId) pollJob('spec', state.specJobId);
+}
+
+// ── Polling ───────────────────────────────────────────────────────────────────
+function pollJob(type, jobId) {
+  const timer = setInterval(async () => {
+    const resp = await fetch(`/job/${jobId}`);
+    const data = await resp.json();
+
+    const pct = data.total > 0 ? Math.round(data.progress / data.total * 100) : 0;
+    const bar = document.getElementById('pb-' + type);
+    bar.style.width = pct + '%';
+    document.getElementById('pct-' + type).textContent =
+      `${data.progress} / ${data.total} pages  (${pct}%)`;
+
+    const logEl = document.getElementById('log-' + type);
+    logEl.innerHTML = data.log.map(l => `<div class="log-line">${l}</div>`).join('');
+    logEl.scrollTop = logEl.scrollHeight;
+
+    setPill(type, data.status);
+
+    if (data.status === 'done') {
+      clearInterval(timer);
+      bar.classList.add('done');
+      if (type === 'cad') {
+        state.cadDone = true;
+        updateReview('cad', data.summary);
+      } else {
+        state.specDone = true;
+        updateReview('spec', data.summary);
+      }
+      checkBothDone();
+    } else if (data.status === 'error') {
+      clearInterval(timer);
+      bar.classList.add('error');
+    }
+  }, 1500);
+}
+
+function setPill(type, status) {
+  const el = document.getElementById(type + '-status-pill');
+  el.className = 'status-pill s-' + status;
+  el.textContent = (type === 'cad' ? 'CAD: ' : 'Spec: ') + status;
+}
+
+function checkBothDone() {
+  if (state.cadDone && state.specDone) {
+    document.getElementById('badge-upload').textContent = '✓';
+    document.getElementById('nav-upload').classList.add('done');
+    // Enable generate button now that extraction is complete
+    document.getElementById('btn-generate').disabled = false;
+    document.getElementById('badge-generate').textContent = '▶';
+  }
+}
+
+// ── Review panel ──────────────────────────────────────────────────────────────
+function updateReview(type, summary) {
+  if (!summary) return;
+  if (type === 'cad' && summary.buildings) {
+    const rows = summary.buildings.map(b =>
+      `<tr>
+        <td><strong>${b.id}</strong></td>
+        <td>${b.roof_area_m2 ? b.roof_area_m2 + ' m²' : '<span style="color:#f57c00">Not detected</span>'}</td>
+        <td>${b.callouts}</td>
+        <td style="font-size:11px;color:#888">${(b.rooms||[]).slice(0,3).join(', ')}</td>
+        <td style="font-size:11px;color:#888">${(b.drawing_refs||[]).join('<br>')}</td>
+      </tr>`
+    ).join('');
+    document.getElementById('cad-review-content').innerHTML = `
+      <table>
+        <thead><tr><th>Building</th><th>Roof Area</th><th>Material Callouts</th><th>Rooms</th><th>Drawing Refs</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+  if (type === 'spec' && summary.documents) {
+    const rows = summary.documents.map(d =>
+      `<tr>
+        <td><strong>${d.ref}</strong></td>
+        <td>${d.title}</td>
+        <td>${d.materials}</td>
+      </tr>`
+    ).join('');
+    document.getElementById('spec-review-content').innerHTML = `
+      <table>
+        <thead><tr><th>Document Ref</th><th>Title</th><th>Materials Found</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generateTracker() {
+  const btn = document.getElementById('btn-generate');
+  const statusEl = document.getElementById('gen-status');
+  const notReady = document.getElementById('gen-not-ready');
+
+  // Guard: CAD must be done and job ID must exist
+  if (!state.cadDone || !state.cadJobId) {
+    notReady.style.display = 'block';
+    return;
+  }
+  notReady.style.display = 'none';
+  btn.disabled = true;
+  statusEl.textContent = 'Generating…';
+
+  const meta = {
+    project_name:   document.getElementById('m-project').value,
+    owner:          document.getElementById('m-owner').value,
+    epcm:           document.getElementById('m-epcm').value,
+    contractor:     document.getElementById('m-contractor').value,
+    sub_contractor: document.getElementById('m-subcontractor').value,
+    project_no:     document.getElementById('m-projno').value,
+  };
+
+  const resp = await fetch('/generate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      cad_job_id:  state.cadJobId,
+      spec_job_id: state.specJobId,
+      project_metadata: meta,
+    }),
+  });
+
+  const data = await resp.json();
+  if (data.error) {
+    statusEl.textContent = '❌ ' + data.error;
+    btn.disabled = false;
+    return;
+  }
+
+  state.genId = data.gen_id;
+  statusEl.textContent = '✅ Done!';
+
+  // Stats
+  document.getElementById('gen-stats').style.display = 'grid';
+  document.getElementById('st-rows').textContent       = data.stats.total_rows;
+  document.getElementById('st-buildings').textContent  = data.stats.buildings;
+  document.getElementById('st-nospec').textContent = data.stats.no_spec;
+
+  // Download link
+  const dl = document.getElementById('download-link');
+  dl.href = `/download/${data.gen_id}`;
+  dl.style.display = 'inline';
+
+  document.getElementById('badge-generate').textContent = '✓';
+  document.getElementById('nav-generate').classList.add('done');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Catalogue Viewer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #sidebar-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid #2d2d4e;
+    }
+
+    #sidebar-header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    #sidebar-header p {
+      font-size: 12px;
+      color: #8888aa;
+      margin-top: 4px;
+    }
+
+    #search-box {
+      margin: 12px 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #2d2d4e;
+      background: #252540;
+      color: #e0e0e0;
+      font-size: 13px;
+      outline: none;
+      width: calc(100% - 32px);
+    }
+
+    #search-box::placeholder { color: #666; }
+    #search-box:focus { border-color: #4f8ef7; }
+
+    #product-list {
+      overflow-y: auto;
+      flex: 1;
+      padding: 8px 0 16px;
+    }
+
+    .product-item {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-item:hover { background: #252540; color: #fff; }
+
+    .product-item.active {
+      background: #1e3a6e;
+      border-left-color: #4f8ef7;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .product-item .badge {
+      background: #2d2d4e;
+      color: #8888aa;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .product-item.active .badge { background: #4f8ef7; color: #fff; }
+
+    /* ── Main content ── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #topbar {
+      background: #fff;
+      padding: 20px 28px;
+      border-bottom: 1px solid #e8eaf0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    #topbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    #topbar-left h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+      outline: none;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+    #topbar-left h2[contenteditable="true"] {
+      border-bottom-color: #4f8ef7;
+    }
+
+    #rename-btn {
+      background: none;
+      border: 1px solid #dde0e8;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      color: #888;
+      padding: 4px 8px;
+      margin-left: 8px;
+      transition: all 0.15s;
+      vertical-align: middle;
+    }
+    #rename-btn:hover { color: #4f8ef7; border-color: #4f8ef7; background: #eef3ff; }
+
+    #topbar-left p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    #filter-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #col-search {
+      padding: 7px 12px;
+      border: 1px solid #dde0e8;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      width: 200px;
+    }
+
+    #col-search:focus { border-color: #4f8ef7; }
+
+    #stats {
+      font-size: 12px;
+      color: #999;
+      white-space: nowrap;
+    }
+
+    /* ── Table area ── */
+    #table-container {
+      flex: 1;
+      overflow: auto;
+      padding: 20px 28px;
+    }
+
+    #empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #aaa;
+      gap: 12px;
+    }
+
+    #empty-state svg { opacity: 0.3; }
+
+    table {
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      font-size: 13px;
+      table-layout: fixed;
+    }
+
+    thead tr {
+      background: #f7f8fc;
+      border-bottom: 2px solid #e8eaf0;
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      color: #666;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      white-space: normal;
+      word-wrap: break-word;
+      border-right: 1px solid #d0d4e0;
+    }
+
+    th:last-child { border-right: none; }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid #d8dce8;
+      border-right: 1px solid #d8dce8;
+      color: #333;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    td:last-child { border-right: none; }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover td { background: #f7f9ff; }
+
+    .item-number {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: #4f8ef7;
+      font-weight: 500;
+    }
+
+    .material-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .material-Gl, .material-G { background: #e8f4e8; color: #2d7a2d; }
+    .material-SS, .material-SS\ A4 { background: #e8eef8; color: #2d4a8a; }
+
+    .highlight { background: #fff3cd; border-radius: 3px; padding: 0 2px; }
+
+    /* ── Editable cells ── */
+    td[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+    td[contenteditable="true"]:focus {
+      background: #eef3ff;
+      box-shadow: inset 0 0 0 2px #4f8ef7;
+      border-radius: 4px;
+    }
+    td[contenteditable="true"]:hover:not(:focus) {
+      background: #f0f4ff;
+    }
+
+    /* ── Delete button ── */
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 15px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .delete-btn:hover { color: #e55; background: #ffeaea; }
+    th.delete-col, td.delete-col { width: 36px; padding: 6px 8px; text-align: center; }
+
+    th { position: relative; overflow: hidden; text-overflow: ellipsis; }
+    .th-label { margin-right: 4px; }
+
+    .col-resize-handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 1;
+    }
+    .col-resize-handle:hover,
+    .col-resize-handle.active { background: #4f8ef7; }
+    .delete-col-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: transparent;
+      font-size: 11px;
+      padding: 1px 3px;
+      border-radius: 3px;
+      line-height: 1;
+      vertical-align: middle;
+      transition: color 0.15s, background 0.15s;
+    }
+    th:hover .delete-col-btn { color: #888; }
+    .delete-col-btn:hover { color: #e55 !important; background: #ffeaea; }
+
+    /* ── Add buttons ── */
+    .add-row-btn {
+      padding: 7px 14px;
+      background: #4f8ef7;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .add-row-btn:hover { background: #3a7ae0; }
+
+    #add-product-btn {
+      margin: 0 16px 12px;
+      padding: 8px 12px;
+      background: #252540;
+      color: #8888aa;
+      border: 1px dashed #3d3d60;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      width: calc(100% - 32px);
+      text-align: center;
+      transition: all 0.15s;
+    }
+    #add-product-btn:hover { background: #2d2d50; color: #fff; border-color: #4f8ef7; }
+
+    /* ── No results ── */
+    .no-results {
+      text-align: center;
+      padding: 48px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>Product Catalogue</h1>
+    <p id="total-products">Loading...</p>
+    <a href="upload.html" style="display:inline-block;margin-top:10px;font-size:12px;color:#4f8ef7;text-decoration:none;">+ Upload new PDF</a>
+  </div>
+  <input type="text" id="search-box" placeholder="Search products..." oninput="filterSidebar()" />
+  <div id="product-list"></div>
+  <button id="add-product-btn" onclick="addProduct()">+ New Product</button>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <div id="topbar">
+    <div id="topbar-left">
+      <h2 id="product-title"
+          contenteditable="false"
+          spellcheck="false"
+          onblur="finishRename(this)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >Select a product</h2>
+      <button id="rename-btn" style="display:none" onclick="startRename()" title="Rename product">&#9998;</button>
+    </div>
+    <div id="filter-bar">
+      <input type="text" id="col-search" placeholder="Filter items..." oninput="renderTable()" />
+      <button class="add-row-btn" onclick="addRow()" id="add-row-btn" style="display:none">+ Add Row</button>
+      <button class="add-row-btn" onclick="addColumn()" id="add-col-btn" style="display:none;background:#6c63ff;">+ Add Column</button>
+      <span id="stats"></span>
+    </div>
+  </div>
+  <div id="table-container">
+    <div id="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+      </svg>
+      <p>Select a product from the sidebar</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let catalogue = {};
+  let activeProduct = null;
+
+  // Load data
+  fetch('gpt_catalogue_progress.json')
+    .then(r => r.json())
+    .then(data => {
+      catalogue = data.catalogue || data;
+      initSidebar();
+    })
+    .catch(() => {
+      document.getElementById('empty-state').innerHTML =
+        '<p style="color:#e55">Could not load gpt_catalogue_progress.json.<br>Make sure it\'s in the same folder as this HTML file.</p>';
+    });
+
+  function initSidebar() {
+    const names = Object.keys(catalogue);
+    document.getElementById('total-products').textContent = `${names.length} products`;
+    renderSidebar(names);
+  }
+
+  function renderSidebar(names) {
+    const list = document.getElementById('product-list');
+    list.innerHTML = names.map(name => {
+      const count = catalogue[name]?.items?.length ?? 0;
+      return `<div class="product-item ${name === activeProduct ? 'active' : ''}"
+                   onclick="selectProduct('${escHtml(name)}')">
+                <span>${escHtml(name)}</span>
+                <span class="badge">${count}</span>
+              </div>`;
+    }).join('');
+  }
+
+  function filterSidebar() {
+    const q = document.getElementById('search-box').value.toLowerCase();
+    const filtered = Object.keys(catalogue).filter(n => n.toLowerCase().includes(q));
+    renderSidebar(filtered);
+  }
+
+  function selectProduct(name) {
+    activeProduct = name;
+    renderSidebar(
+      Object.keys(catalogue).filter(n =>
+        n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
+      )
+    );
+    const titleEl = document.getElementById('product-title');
+    titleEl.textContent = name;
+    titleEl.contentEditable = 'false';
+    document.getElementById('rename-btn').style.display = 'inline-block';
+    document.getElementById('add-row-btn').style.display = 'inline-block';
+    document.getElementById('add-col-btn').style.display = 'inline-block';
+    document.getElementById('col-search').value = '';
+    renderTable();
+  }
+
+  function renderTable() {
+    const container = document.getElementById('table-container');
+    if (!activeProduct) return;
+
+    const items = catalogue[activeProduct]?.items ?? [];
+    const q = document.getElementById('col-search').value.toLowerCase();
+
+    const filtered = q
+      ? items.filter(item => Object.values(item).some(v => String(v).toLowerCase().includes(q)))
+      : items;
+
+    document.getElementById('stats').textContent =
+      `${filtered.length} of ${items.length} items`;
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="no-results">No items match your filter.</div>';
+      return;
+    }
+
+    // Collect all column keys
+    const keys = [...new Set(filtered.flatMap(item => Object.keys(item)))];
+
+    const colW = Math.max(120, Math.floor(800 / keys.length));
+    const thead = `<thead><tr>${keys.map(k => `<th style="width:${colW}px"><span class="th-label">${escHtml(k)}</span><button class="delete-col-btn" title="Delete column" onclick="deleteColumn('${escHtml(k)}')">✕</button><div class="col-resize-handle"></div></th>`).join('')}<th class="delete-col" style="width:36px"></th></tr></thead>`;
+
+    const tbody = filtered.map((item, rowIdx) => {
+      // Find the real index in the full items array for deletion
+      const realIdx = items.indexOf(item);
+      const cells = keys.map(k => {
+        const valStr = String(item[k] ?? '');
+        return `<td contenteditable="true"
+                    data-key="${escHtml(k)}"
+                    data-idx="${realIdx}"
+                    onblur="saveCell(this)"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+                  >${escHtml(valStr)}</td>`;
+      }).join('');
+      return `<tr>${cells}<td class="delete-col"><button class="delete-btn" title="Delete row" onclick="deleteRow(${realIdx})">✕</button></td></tr>`;
+    }).join('');
+
+    container.innerHTML = `<table>${thead}<tbody>${tbody}</tbody></table>`;
+    initColumnResize();
+  }
+
+  function saveCell(td) {
+    const idx = parseInt(td.dataset.idx);
+    const key = td.dataset.key;
+    const newVal = td.innerText.trim();
+    if (catalogue[activeProduct]?.items?.[idx] !== undefined) {
+      catalogue[activeProduct].items[idx][key] = newVal;
+    }
+  }
+
+  function deleteRow(idx) {
+    if (!activeProduct) return;
+    catalogue[activeProduct].items.splice(idx, 1);
+    refreshSidebar();
+    renderTable();
+  }
+
+  function addRow() {
+    if (!activeProduct) return;
+    const items = catalogue[activeProduct].items;
+    // Build an empty object with the same keys as existing rows
+    const keys = items.length > 0 ? Object.keys(items[0]) : ['item_number'];
+    const newRow = {};
+    keys.forEach(k => newRow[k] = '');
+    items.push(newRow);
+    refreshSidebar();
+    renderTable();
+    // Scroll to bottom and focus first cell of new row
+    const container = document.getElementById('table-container');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function deleteColumn(key) {
+    if (!activeProduct) return;
+    if (!confirm(`Delete column "${key}" from all rows?`)) return;
+    catalogue[activeProduct].items.forEach(item => delete item[key]);
+    renderTable();
+  }
+
+  function addColumn() {
+    if (!activeProduct) return;
+    const colName = prompt('Enter new column name:');
+    if (!colName || !colName.trim()) return;
+    const trimmed = colName.trim();
+    // Add the key with empty value to every row
+    const items = catalogue[activeProduct].items;
+    items.forEach(item => { if (!(trimmed in item)) item[trimmed] = ''; });
+    // If no rows exist yet, nothing to add to but column will appear on next Add Row
+    renderTable();
+  }
+
+  function addProduct() {
+    const name = prompt('Enter new product name:');
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    if (catalogue[trimmed]) { alert('Product already exists.'); return; }
+    catalogue[trimmed] = { description: '', items: [] };
+    refreshSidebar();
+    selectProduct(trimmed);
+  }
+
+  function refreshSidebar() {
+    renderSidebar(
+      Object.keys(catalogue).filter(n =>
+        n.toLowerCase().includes(document.getElementById('search-box').value.toLowerCase())
+      )
+    );
+  }
+
+  function startRename() {
+    if (!activeProduct) return;
+    const titleEl = document.getElementById('product-title');
+    titleEl.contentEditable = 'true';
+    titleEl.focus();
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function finishRename(el) {
+    el.contentEditable = 'false';
+    if (!activeProduct) return;
+    const newName = el.innerText.trim();
+    if (!newName || newName === activeProduct) {
+      el.textContent = activeProduct;
+      return;
+    }
+    if (catalogue[newName]) {
+      alert('A product with that name already exists.');
+      el.textContent = activeProduct;
+      return;
+    }
+    catalogue[newName] = catalogue[activeProduct];
+    delete catalogue[activeProduct];
+    activeProduct = newName;
+    refreshSidebar();
+  }
+
+  function initColumnResize() {
+    document.querySelectorAll('.col-resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const th = this.parentElement;
+        const startX = e.pageX;
+        const startW = th.offsetWidth;
+        this.classList.add('active');
+        const onMove = (ev) => {
+          th.style.width = Math.max(50, startW + ev.pageX - startX) + 'px';
+        };
+        const onUp = () => {
+          this.classList.remove('active');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function escRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+</script>
+</body>
+</html>

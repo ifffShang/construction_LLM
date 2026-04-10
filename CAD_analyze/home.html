@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Material Tracker – Projects</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+.header{background:#1a1a2e;padding:28px 0;text-align:center;color:#fff}
+.header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.header p{font-size:12px;color:#8888aa;margin-top:5px}
+
+.container{max-width:900px;margin:0 auto;padding:36px 20px}
+
+/* action cards */
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:36px}
+.action-card{background:#fff;border-radius:14px;border:1px solid #e8eaf0;padding:40px 28px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.action-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.action-card .icon{font-size:48px;margin-bottom:16px}
+.action-card h2{font-size:18px;font-weight:700;margin-bottom:8px}
+.action-card p{font-size:13px;color:#888;line-height:1.6}
+.action-card.new-project{border-top:4px solid #4f8ef7}
+.action-card.new-project:hover{border-color:#3a7ae0;background:#f8faff}
+.action-card.existing{border-top:4px solid #28a745}
+.action-card.existing:hover{border-color:#1e8e3e;background:#f5fff8}
+
+/* project list section */
+.section-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title .count{font-size:11px;background:#e8eaf0;color:#666;padding:2px 10px;border-radius:12px}
+
+.project-list{display:flex;flex-direction:column;gap:10px}
+.project-card{background:#fff;border-radius:10px;border:1px solid #e8eaf0;padding:16px 22px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:all .15s}
+.project-card:hover{background:#f8faff;border-color:#4f8ef7;box-shadow:0 2px 10px rgba(79,142,247,.1)}
+.project-card .picon{font-size:28px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f0f2f5;border-radius:10px;flex-shrink:0}
+.project-card .pinfo{flex:1;min-width:0}
+.project-card .pname{font-size:14px;font-weight:700;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-card .pmeta{font-size:11px;color:#888;display:flex;gap:14px;flex-wrap:wrap}
+.project-card .pmeta span{display:flex;align-items:center;gap:4px}
+.project-card .arrow{color:#ccc;font-size:18px;flex-shrink:0;transition:color .15s}
+.project-card:hover .arrow{color:#4f8ef7}
+
+.empty-state{text-align:center;padding:48px 20px;color:#aaa;font-size:13px}
+.empty-state .eicon{font-size:40px;margin-bottom:12px;opacity:.5}
+
+.tag-sm{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-cad{background:#e8f0ff;color:#4f8ef7}
+.tag-spec{background:#e8f7ef;color:#28a745}
+
+/* modal overlay for new project */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:28px;width:460px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:18px}
+.form-group{margin-bottom:14px}
+.form-group label{font-size:11px;font-weight:700;color:#666;display:block;margin-bottom:4px}
+.form-group input{width:100%;padding:9px 12px;border:1px solid #dde0e8;border-radius:8px;font-size:13px;outline:none}
+.form-group input:focus{border-color:#4f8ef7}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.btn-primary{background:#4f8ef7;color:#fff}
+.btn-primary:hover{background:#3a7ae0}
+.btn-secondary{background:#f0f2f5;color:#444;border:1px solid #dde0e8}
+.btn-secondary:hover{background:#e4e8f0}
+
+.delete-btn{background:none;border:none;cursor:pointer;font-size:16px;opacity:.3;transition:opacity .15s;padding:4px 8px;border-radius:6px}
+.delete-btn:hover{opacity:1;background:#fff0f0}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#dde0e8;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Construction Material Tracker</h1>
+  <p>CAD Drawings + Specifications → Excel Material Tracker</p>
+</div>
+
+<div class="container">
+
+  <div class="action-grid">
+    <div class="action-card new-project" onclick="showNewProjectModal()">
+      <div class="icon">🆕</div>
+      <h2>New Project</h2>
+      <p>Create a new material tracking project<br>Upload CAD drawings and specification documents</p>
+    </div>
+    <div class="action-card existing" onclick="toggleProjectList()">
+      <div class="icon">📂</div>
+      <h2>Existing Projects</h2>
+      <p>View and manage previously created projects<br>Continue unfinished work</p>
+    </div>
+  </div>
+
+  <div id="project-list-section" style="display:none">
+    <div class="section-title">
+      Existing Projects
+      <span class="count" id="project-count">0</span>
+    </div>
+    <div class="project-list" id="project-list">
+      <div class="empty-state" id="empty-state">
+        <div class="eicon">📭</div>
+        <div>No projects yet. Click "New Project" above to get started.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- New Project Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>New Project</h3>
+    <div class="form-group">
+      <label>Project Name *</label>
+      <input id="inp-name" placeholder="e.g. ADNOC Gas – Habshan 4" autofocus/>
+    </div>
+    <div class="form-group">
+      <label>Owner</label>
+      <input id="inp-owner" placeholder="e.g. ADNOC"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>EPCM</label>
+        <input id="inp-epcm" placeholder="e.g. AMEC International"/>
+      </div>
+      <div class="form-group">
+        <label>Project No.</label>
+        <input id="inp-projno" placeholder="e.g. 30201-50150"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="hideModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-create" onclick="createProject()">Create Project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let projectListVisible = false;
+
+function showNewProjectModal() {
+  document.getElementById('modal-overlay').classList.add('show');
+  document.getElementById('inp-name').focus();
+}
+function hideModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) hideModal();
+});
+
+async function createProject() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) {
+    document.getElementById('inp-name').style.borderColor = '#e05555';
+    return;
+  }
+
+  const body = {
+    name,
+    owner: document.getElementById('inp-owner').value.trim(),
+    epcm: document.getElementById('inp-epcm').value.trim(),
+    project_no: document.getElementById('inp-projno').value.trim(),
+  };
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  try {
+    const resp = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    window.location.href = `/app/${data.project_id}`;
+  } catch(e) {
+    alert('Creation failed: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Create Project';
+  }
+}
+
+function toggleProjectList() {
+  const section = document.getElementById('project-list-section');
+  if (projectListVisible) {
+    section.style.display = 'none';
+    projectListVisible = false;
+  } else {
+    section.style.display = 'block';
+    projectListVisible = true;
+    loadProjects();
+  }
+}
+
+async function loadProjects() {
+  try {
+    const resp = await fetch('/api/projects');
+    const data = await resp.json();
+    renderProjects(data.projects);
+  } catch(e) {
+    console.error('Failed to load projects', e);
+  }
+}
+
+function renderProjects(projects) {
+  const listEl = document.getElementById('project-list');
+  const countEl = document.getElementById('project-count');
+  countEl.textContent = projects.length;
+
+  if (projects.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="eicon">📭</div>
+        <div>No projects yet. Click "New Project" above to get started.</div>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = projects.map(p => {
+    const date = new Date(p.created_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+    });
+    const cadCount = (p.cad_files || []).length;
+    const specCount = (p.spec_files || []).length;
+    return `
+      <div class="project-card" onclick="window.location.href='/app/${p.id}'">
+        <div class="picon">📐</div>
+        <div class="pinfo">
+          <div class="pname">${escHtml(p.name)}</div>
+          <div class="pmeta">
+            <span>🕐 ${date}</span>
+            ${cadCount ? `<span><span class="tag-sm tag-cad">${cadCount} CAD</span></span>` : ''}
+            ${specCount ? `<span><span class="tag-sm tag-spec">${specCount} Spec</span></span>` : ''}
+            ${p.owner ? `<span>👤 ${escHtml(p.owner)}</span>` : ''}
+          </div>
+        </div>
+        <button class="delete-btn" title="Delete project" onclick="event.stopPropagation();deleteProject('${p.id}','${escHtml(p.name)}')">🗑️</button>
+        <span class="arrow">›</span>
+      </div>`;
+  }).join('');
+}
+
+async function deleteProject(id, name) {
+  if (!confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) return;
+  try {
+    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    loadProjects();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+  }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') hideModal();
+  if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('show')) createProject();
+});
+</script>
+</body>
+</html>
